@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "452209938277",
+    "project_id": "calendar-by-ourselves-dacs3",
+    "storage_bucket": "calendar-by-ourselves-dacs3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:452209938277:android:f6b25d7ad3986fd16bdb8c",
+        "android_client_info": {
+          "package_name": "com.example.calendarbyourselvesdacs3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "452209938277-e6jgklm9ai940kd4s3l31c5rpeu1ntjt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.calendarbyourselvesdacs3",
+            "certificate_hash": "d8600a2c0240d3e188d6a0cedc6d8c231bc844cb"
+          }
+        },
+        {
+          "client_id": "452209938277-f6alp08v50noeom4bbe7632d8uhga986.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC3jvb4Xu2UyANjeW-Kg0niG7SnmQBB8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "452209938277-f6alp08v50noeom4bbe7632d8uhga986.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
