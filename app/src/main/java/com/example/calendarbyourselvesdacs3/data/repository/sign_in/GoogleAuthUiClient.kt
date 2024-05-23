@@ -1,11 +1,11 @@
-package com.example.calendarbyourselvesdacs3.presentation.sign_in
+package com.example.calendarbyourselvesdacs3.data.repository.sign_in
 
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import com.example.calendarbyourselvesdacs3.R
-import com.example.calendarbyourselvesdacs3.presentation.sign_in.data.SignInResult
-import com.example.calendarbyourselvesdacs3.presentation.sign_in.data.UserData
+import com.example.calendarbyourselvesdacs3.data.model.sign_in.SignInResult
+import com.example.calendarbyourselvesdacs3.data.model.user.UserData
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient

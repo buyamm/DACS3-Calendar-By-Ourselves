@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.sign_in.data
+package com.example.calendarbyourselvesdacs3.data.model.user
 
 data class UserData(
     val userId: String,

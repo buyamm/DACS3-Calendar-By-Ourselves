@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.calendarbyourselvesdacs3.presentation.sign_in.data.UserData
+import com.example.calendarbyourselvesdacs3.data.model.user.UserData
 
 @Composable
 fun ProfileScreen(

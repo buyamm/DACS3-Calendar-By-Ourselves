@@ -8,13 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.calendarbyourselvesdacs3.presentation.MainViewModel
+import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.example.calendarbyourselvesdacs3.presentation.navigation.NavGraph
 import com.example.calendarbyourselvesdacs3.ui.theme.CalendarByOurselvesDACS3Theme
 
 
 class MainActivity : ComponentActivity() {
- private val viewModel by viewModels<MainViewModel>()
+ private val viewModel by viewModels<SignInViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

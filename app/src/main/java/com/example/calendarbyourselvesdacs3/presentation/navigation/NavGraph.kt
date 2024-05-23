@@ -15,17 +15,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.calendarbyourselvesdacs3.presentation.MainViewModel
+import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUiClient
 import com.example.calendarbyourselvesdacs3.presentation.home.ProfileScreen
-import com.example.calendarbyourselvesdacs3.presentation.sign_in.GoogleAuthUiClient
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
+import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun NavGraph(viewModel: MainViewModel, context: Context) {
+fun NavGraph(viewModel: SignInViewModel, context: Context) {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
      val googleAuthUiClient by lazy {

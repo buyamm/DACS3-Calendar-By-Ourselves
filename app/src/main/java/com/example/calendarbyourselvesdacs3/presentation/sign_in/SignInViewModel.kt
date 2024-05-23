@@ -1,13 +1,13 @@
-package com.example.calendarbyourselvesdacs3.presentation
+package com.example.calendarbyourselvesdacs3.presentation.sign_in
 
 import androidx.lifecycle.ViewModel
-import com.example.calendarbyourselvesdacs3.presentation.sign_in.data.SignInResult
-import com.example.calendarbyourselvesdacs3.presentation.sign_in.data.SignInState
+import com.example.calendarbyourselvesdacs3.data.model.sign_in.SignInResult
+import com.example.calendarbyourselvesdacs3.data.model.sign_in.SignInState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class MainViewModel:ViewModel() {
+class SignInViewModel:ViewModel() {
     private val _uiState = MutableStateFlow(SignInState())
     val uiState = _uiState.asStateFlow()
 
