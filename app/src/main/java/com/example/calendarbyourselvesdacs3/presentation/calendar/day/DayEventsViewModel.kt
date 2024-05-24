@@ -6,13 +6,12 @@ import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.orbitmvi.orbit.Container
 import org.orbitmvi.orbit.ContainerHost
-import org.orbitmvi.orbit.syntax.simple.SimpleSyntax
 import org.orbitmvi.orbit.syntax.simple.intent
 import org.orbitmvi.orbit.syntax.simple.postSideEffect
 import org.orbitmvi.orbit.syntax.simple.reduce
 import org.orbitmvi.orbit.syntax.simple.repeatOnSubscription
 import org.orbitmvi.orbit.viewmodel.container
-import com.example.calendarbyourselvesdacs3.presentation.routing.localDateArg
+import com.example.calendarbyourselvesdacs3.presentation.navigation.localDateArg
 import java.time.LocalDate
 import javax.inject.Inject
 

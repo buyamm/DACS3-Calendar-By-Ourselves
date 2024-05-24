@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.routing
+package com.example.calendarbyourselvesdacs3.presentation.navigation
 
 import java.time.LocalDate
 
