@@ -67,7 +67,7 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 
-fun InteractWithEventScreen(
+fun InteractWithTaskScreen(
     onBack: () -> Unit,
     onSave: () -> Unit
 ) {

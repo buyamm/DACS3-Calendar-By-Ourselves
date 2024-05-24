@@ -20,7 +20,8 @@ import com.example.calendarbyourselvesdacs3.presentation.home.HomeScreen
 import com.example.calendarbyourselvesdacs3.presentation.search.SearchScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
-import com.example.calendarbyourselvesdacs3.presentation.task.InteractWithEventScreen
+import com.example.calendarbyourselvesdacs3.presentation.task.InteractWithTaskScreen
+import com.example.calendarbyourselvesdacs3.presentation.task.ListEventScreen
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 
@@ -113,15 +114,20 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
         composable(route = Screen.SearchScreen.name) {
             SearchScreen(
                 onBackClick = { navController.popBackStack() },
-                onTaskClick = { navController.navigate(Screen.InteractWithTaskScreen.name) })
+                onTaskClick = { navController.navigate(Screen.ListTaskScreen.name) })
         }
 
         composable(route = Screen.InteractWithTaskScreen.name) {
-            InteractWithEventScreen(onBack = { navController.popBackStack() }, onSave = {})
+            InteractWithTaskScreen(onBack = { navController.popBackStack() }, onSave = {})
         }
 
         composable(route = Screen.ListTaskScreen.name) {
-
+            googleAuthUiClient.getSignedInUser()
+                ?.let { it1 ->
+                    ListEventScreen(
+                        userData = it1,
+                        onTaskList = { navController.navigate(Screen.InteractWithTaskScreen.name) })
+                }
         }
     }
 }
