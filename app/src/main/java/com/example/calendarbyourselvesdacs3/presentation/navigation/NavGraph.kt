@@ -16,9 +16,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUiClient
-import com.example.calendarbyourselvesdacs3.presentation.home.ProfileScreen
+import com.example.calendarbyourselvesdacs3.presentation.home.HomeScreen
+import com.example.calendarbyourselvesdacs3.presentation.search.SearchScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
+import com.example.calendarbyourselvesdacs3.presentation.task.InteractWithEventScreen
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 
@@ -28,7 +30,7 @@ import kotlinx.coroutines.launch
 fun NavGraph(viewModel: SignInViewModel, context: Context) {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
-     val googleAuthUiClient by lazy {
+    val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = context,
             oneTapClient = Identity.getSignInClient(context)
@@ -41,7 +43,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
             val state by viewModel.uiState.collectAsStateWithLifecycle()
 
             LaunchedEffect(key1 = Unit) {
-                if(googleAuthUiClient.getSignedInUser() != null) {
+                if (googleAuthUiClient.getSignedInUser() != null) {
                     navController.navigate(Screen.HomeScreen.name)
                 }
             }
@@ -49,7 +51,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
             val launcher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.StartIntentSenderForResult(),
                 onResult = { result ->
-                    if(result.resultCode == Activity.RESULT_OK) {
+                    if (result.resultCode == Activity.RESULT_OK) {
                         coroutineScope.launch {
                             val signInResult = googleAuthUiClient.signInWithIntent(
                                 intent = result.data ?: return@launch
@@ -61,7 +63,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
             )
 
             LaunchedEffect(key1 = state.isSignInSuccessfull) {
-                if(state.isSignInSuccessfull) {
+                if (state.isSignInSuccessfull) {
                     Toast.makeText(
                         context,
                         "Sign in successful",
@@ -88,7 +90,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
             )
         }
         composable(Screen.HomeScreen.name) {
-            ProfileScreen(
+            HomeScreen(
                 userData = googleAuthUiClient.getSignedInUser(),
                 onSignOut = {
                     coroutineScope.launch {
@@ -101,8 +103,25 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
 
                         navController.popBackStack()
                     }
+                },
+                onSearchClick = {
+                    navController.navigate(route = Screen.SearchScreen.name)
                 }
             )
+        }
+
+        composable(route = Screen.SearchScreen.name) {
+            SearchScreen(
+                onBackClick = { navController.popBackStack() },
+                onTaskClick = { navController.navigate(Screen.InteractWithTaskScreen.name) })
+        }
+
+        composable(route = Screen.InteractWithTaskScreen.name) {
+            InteractWithEventScreen(onBack = { navController.popBackStack() }, onSave = {})
+        }
+
+        composable(route = Screen.ListTaskScreen.name) {
+
         }
     }
 }
