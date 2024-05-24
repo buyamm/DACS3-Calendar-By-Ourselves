@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.example.calendarbyourselvesdacs3.presentation.navigation.NavGraph
-import com.example.calendarbyourselvesdacs3.presentation.routing.Routing
 import com.example.calendarbyourselvesdacs3.ui.theme.CalendarByOurselvesDACS3Theme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -32,10 +31,10 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    Routing(navController = navController)
+                    //==============CALENDAR===============
 
 //                    val viewModel = viewModel<MainViewModel>()
-//                    NavGraph(viewModel = viewModel, context = applicationContext)
+                    NavGraph(viewModel = viewModel, context = applicationContext)
                 }
             }
         }

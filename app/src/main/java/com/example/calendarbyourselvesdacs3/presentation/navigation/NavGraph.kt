@@ -15,8 +15,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUiClient
+import com.example.calendarbyourselvesdacs3.presentation.calendar.day.DayEventsScreen
+import com.example.calendarbyourselvesdacs3.presentation.calendar.month.CalendarMonthScreen
+import com.example.calendarbyourselvesdacs3.presentation.events.create.CreateEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.home.ProfileScreen
+import com.example.calendarbyourselvesdacs3.presentation.navigation.navArg
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.google.android.gms.auth.api.identity.Identity
@@ -35,7 +40,10 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
         )
     }
 
-    NavHost(navController = navController, startDestination = Screen.SignInScreen.name) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.SignInScreen.name
+    ) {
         composable(Screen.SignInScreen.name) {
 
             val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -102,6 +110,44 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                         navController.popBackStack()
                     }
                 }
+            )
+        }
+
+        composable("calendar") {
+            CalendarMonthScreen(
+                onNavigateCreateEvent = { date ->
+                    navController.navigate("events/create?date=${date.navArg()}")
+                },
+                onNavigateDay = { date ->
+                    navController.navigate("calendar/day?date=${date.navArg()}")
+                }
+            )
+        }
+
+        // Hiển thị danh sách sự kiện
+        composable(
+            route = "calendar/day?date={date}",
+            arguments = listOf(navArgument(name = "date") {}),
+        ) {
+            DayEventsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateCreateEvent = { date ->
+                    navController.navigate("events/create?date=${date.navArg()}")
+                },
+            )
+        }
+
+        //tạo sự kiện
+        composable(
+            route = "events/create?date={date}",
+            arguments = listOf(navArgument(name = "date") {}),
+        ) {
+            CreateEventScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
             )
         }
     }

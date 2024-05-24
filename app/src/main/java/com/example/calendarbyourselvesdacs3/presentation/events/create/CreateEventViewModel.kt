@@ -3,7 +3,7 @@ package com.example.calendarbyourselvesdacs3.presentation.events.create
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.example.calendarbyourselvesdacs3.presentation.routing.localDateArg
+import com.example.calendarbyourselvesdacs3.presentation.navigation.localDateArg
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.syntax.simple.intent
