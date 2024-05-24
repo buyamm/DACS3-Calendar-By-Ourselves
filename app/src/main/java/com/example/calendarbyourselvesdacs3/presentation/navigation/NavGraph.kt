@@ -76,7 +76,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                         Toast.LENGTH_LONG
                     ).show()
 
-                    navController.navigate(Screen.HomeScreen.name)
+                    navController.navigate("calendar")
                     viewModel.resetState()
                 }
             }
