@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import com.example.calendarbyourselvesdacs3.R
-import com.example.calendarbyourselvesdacs3.data.model.sign_in.SignInResult
-import com.example.calendarbyourselvesdacs3.data.model.user.UserData
+import com.example.calendarbyourselvesdacs3.domain.model.sign_in.SignInResult
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient

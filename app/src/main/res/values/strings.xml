@@ -1,4 +1,26 @@
 <resources>
     <string name="app_name">Calendar By Ourselves DACS3</string>
     <string name="web_client_id">452209938277-f6alp08v50noeom4bbe7632d8uhga986.apps.googleusercontent.com</string>
+
+    <!-- Calendar Month Screen -->
+    <string name="calendar_next_month">Next Month</string>
+    <string name="calendar_previous_month">Previous Month</string>
+    <string name="calendar_export">Export Calendar</string>
+    <string name="calendar_import">Import Calendar</string>
+    <string name="calendar_return_to_date">Return to date</string>
+
+    <!-- Create Event Screen -->
+    <string name="create_event_title">New Event</string>
+    <string name="create_event_label_title">Title</string>
+    <string name="create_event_label_description">Description</string>
+    <string name="create_event_add_event">Add Event</string>
+    <string name="create_event_description_date">Select Date</string>
+    <string name="create_event_description_time">Select Time</string>
+
+    <!-- Events -->
+    <string name="event_add">Add Event</string>
+    <string name="event_delete">Delete Event</string>
+
+    <!-- Time Picker -->
+    <string name="time_picker_title">Select Time</string>
 </resources>
