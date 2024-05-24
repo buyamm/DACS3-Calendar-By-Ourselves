@@ -38,6 +38,12 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs += "-Xcontext-receivers"
+        freeCompilerArgs += "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api"
+        freeCompilerArgs += "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi"
+        freeCompilerArgs += "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
+        freeCompilerArgs += "-opt-in=kotlin.ExperimentalStdlibApi"
+        freeCompilerArgs += "-opt-in=kotlin.contracts.ExperimentalContracts"
     }
     buildFeatures {
         compose = true

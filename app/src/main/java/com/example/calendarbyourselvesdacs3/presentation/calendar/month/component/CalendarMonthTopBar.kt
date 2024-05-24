@@ -3,6 +3,7 @@ package com.example.calendarbyourselvesdacs3.presentation.calendar.month.compone
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Restore
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +19,7 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarMonthTopBar(
     date: LocalDate?,
@@ -51,7 +53,7 @@ private fun ReturnToDateButton(onClick: () -> Unit) {
     ) {
         Icon(
             painter = rememberVectorPainter(image = Icons.Rounded.Restore),
-            contentDescription = stringResource(id = R.string.calendar_return_to_date),
+            contentDescription = null,
         )
     }
 }

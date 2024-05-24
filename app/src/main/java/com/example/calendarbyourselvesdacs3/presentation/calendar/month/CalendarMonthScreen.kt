@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.MonthDays
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarMonthTopBar
+import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarView
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 import java.time.LocalDate
@@ -34,8 +35,8 @@ fun CalendarMonthScreen(
 
     viewModel.collectSideEffect {
         when (it) {
-            is NavigateCreateEvent -> onNavigateCreateEvent(it.date)
-            is NavigateToDay -> onNavigateDay(it.date)
+            is CalendarMonthViewModel.SideEffect.NavigateCreateEvent -> onNavigateCreateEvent(it.date)
+            is CalendarMonthViewModel.SideEffect.NavigateToDay -> onNavigateDay(it.date)
         }
     }
 
@@ -106,12 +107,12 @@ private fun Calendar(
         TextButton(
             onClick = { onPreviousMonth() },
         ) {
-            Text(text = stringResource(id = R.string.calendar_previous_month))
+            Text(text = "Lui")
         }
         TextButton(
             onClick = { onNextMonth() },
         ) {
-            Text(text = stringResource(id = R.string.calendar_next_month))
+            Text(text = "Tới")
         }
     }
 }

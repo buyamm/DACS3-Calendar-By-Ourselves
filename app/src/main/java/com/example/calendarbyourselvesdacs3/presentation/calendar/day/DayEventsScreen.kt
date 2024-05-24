@@ -31,7 +31,7 @@ fun DayEventsScreen(
 
     viewModel.collectSideEffect {
         when (it) {
-            is NavigateCreateEvent -> onNavigateCreateEvent(it.date)
+            is DayEventsViewModel.SideEffect.NavigateCreateEvent -> onNavigateCreateEvent(it.date)
         }
     }
 
@@ -49,7 +49,7 @@ fun DayEventsScreen(
             ) {
                 Icon(
                     painter = rememberVectorPainter(image = Icons.Rounded.Add),
-                    contentDescription = stringResource(id = R.string.event_add),
+                    contentDescription = null,
                 )
             }
         },
