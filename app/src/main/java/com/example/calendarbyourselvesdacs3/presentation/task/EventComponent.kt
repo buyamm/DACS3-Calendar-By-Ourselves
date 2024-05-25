@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.wear.compose.material.ExperimentalWearMaterialApi
 import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
 import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
@@ -33,9 +34,11 @@ import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
 import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
 import com.example.listeventui.data.Task
 
+@OptIn(ExperimentalWearMaterialApi::class)
 @Composable
-fun TaskComponent(task: Task, onTaskClick: () -> Unit) {
+fun EventComponent(task: Task, onTaskClick: () -> Unit) {
     val taskColor = listOf(GreenColor, RedColor, DefaultColor, YellowColor).random()
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),

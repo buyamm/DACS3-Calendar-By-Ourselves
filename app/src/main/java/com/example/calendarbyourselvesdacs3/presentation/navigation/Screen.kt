@@ -4,6 +4,6 @@ enum class Screen {
     SignInScreen,
     HomeScreen,
     SearchScreen,
-    ListTaskScreen,
+    ListEventScreen,
     InteractWithTaskScreen
 }

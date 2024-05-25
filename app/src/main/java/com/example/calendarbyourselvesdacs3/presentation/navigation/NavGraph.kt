@@ -38,7 +38,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
         )
     }
 
-    NavHost(navController = navController, startDestination = Screen.SignInScreen.name) {
+    NavHost(navController = navController, startDestination = Screen.ListEventScreen.name) {
         composable(Screen.SignInScreen.name) {
 
             val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -114,19 +114,19 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
         composable(route = Screen.SearchScreen.name) {
             SearchScreen(
                 onBackClick = { navController.popBackStack() },
-                onTaskClick = { navController.navigate(Screen.ListTaskScreen.name) })
+                onEventClick = { navController.navigate(Screen.ListEventScreen.name) })
         }
 
         composable(route = Screen.InteractWithTaskScreen.name) {
             InteractWithTaskScreen(onBack = { navController.popBackStack() }, onSave = {})
         }
 
-        composable(route = Screen.ListTaskScreen.name) {
+        composable(route = Screen.ListEventScreen.name) {
             googleAuthUiClient.getSignedInUser()
                 ?.let { it1 ->
                     ListEventScreen(
                         userData = it1,
-                        onTaskList = { navController.navigate(Screen.InteractWithTaskScreen.name) })
+                        onEventList = { navController.navigate(Screen.InteractWithTaskScreen.name) })
                 }
         }
     }

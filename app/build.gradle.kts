@@ -66,6 +66,9 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.googleid)
 
+    // material for swipe
+    implementation(libs.androidx.compose.material)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
