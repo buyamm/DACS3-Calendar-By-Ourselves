@@ -5,6 +5,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.EventsOfDate
 import com.example.calendarbyourselvesdacs3.presentation.navigation.localDateArg
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,7 +80,29 @@ class CreateEventViewModel @Inject constructor(
 
             //
             var eventsOfDate = EventsOfDate(title = title, date = date.toString())
-            myRef.child(date.toString()).setValue(eventsOfDate)
+            myRef.child(date.toString()).setValue(eventsOfDate).addOnCompleteListener{
+                Log.d("thành công", "ôkkkkk")
+            }.addOnFailureListener {
+                Log.d("ko ổn", "ajsdkfjkajsdkl;f")
+            }
+
+
+
+            // Read from the database
+            myRef.addValueEventListener(object: ValueEventListener {
+
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    // This method is called once with the initial value and again
+                    // whenever data at this location is updated.
+                    val value = snapshot.getValue()
+                    Log.d("Test------->", "Value is: " + value)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.w("Test------->", "Failed to read value.", error.toException())
+                }
+
+            })
 
 
 
