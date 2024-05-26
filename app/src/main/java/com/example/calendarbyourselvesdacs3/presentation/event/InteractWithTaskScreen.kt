@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.task
+package com.example.calendarbyourselvesdacs3.presentation.event
 
 import android.widget.Toast
 import androidx.compose.foundation.background

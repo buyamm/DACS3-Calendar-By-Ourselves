@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.task
+package com.example.calendarbyourselvesdacs3.presentation.event
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

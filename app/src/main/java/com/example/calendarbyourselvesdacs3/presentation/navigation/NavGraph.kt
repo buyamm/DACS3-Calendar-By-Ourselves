@@ -20,8 +20,8 @@ import com.example.calendarbyourselvesdacs3.presentation.home.HomeScreen
 import com.example.calendarbyourselvesdacs3.presentation.search.SearchScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
-import com.example.calendarbyourselvesdacs3.presentation.task.InteractWithTaskScreen
-import com.example.calendarbyourselvesdacs3.presentation.task.ListEventScreen
+import com.example.calendarbyourselvesdacs3.presentation.event.InteractWithTaskScreen
+import com.example.calendarbyourselvesdacs3.presentation.event.ListEventScreen
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 

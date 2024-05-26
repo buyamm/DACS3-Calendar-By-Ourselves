@@ -24,7 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.calendarbyourselvesdacs3.data.api.MockApi
-import com.example.calendarbyourselvesdacs3.presentation.task.EventComponent
+import com.example.calendarbyourselvesdacs3.presentation.event.EventComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
