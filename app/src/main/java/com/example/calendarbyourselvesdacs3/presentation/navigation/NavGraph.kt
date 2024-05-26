@@ -19,21 +19,23 @@ import androidx.navigation.navArgument
 import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUiClient
 import com.example.calendarbyourselvesdacs3.presentation.calendar.day.DayEventsScreen
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.CalendarMonthScreen
+import com.example.calendarbyourselvesdacs3.presentation.event.InteractWithTaskScreen
+import com.example.calendarbyourselvesdacs3.presentation.event.ListEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.events.create.CreateEventScreen
-import com.example.calendarbyourselvesdacs3.presentation.home.ProfileScreen
-import com.example.calendarbyourselvesdacs3.presentation.navigation.navArg
+import com.example.calendarbyourselvesdacs3.presentation.home.HomeScreen
+import com.example.calendarbyourselvesdacs3.presentation.search.SearchScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 
 
-@SuppressLint("StateFlowValueCalledInComposition")
+@SuppressLint("StateFlowValueCalledInComposition", "ComposableDestinationInComposeScope")
 @Composable
 fun NavGraph(viewModel: SignInViewModel, context: Context) {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
-     val googleAuthUiClient by lazy {
+    val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = context,
             oneTapClient = Identity.getSignInClient(context)
@@ -49,7 +51,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
             val state by viewModel.uiState.collectAsStateWithLifecycle()
 
             LaunchedEffect(key1 = Unit) {
-                if(googleAuthUiClient.getSignedInUser() != null) {
+                if (googleAuthUiClient.getSignedInUser() != null) {
                     navController.navigate(Screen.HomeScreen.name)
                 }
             }
@@ -57,7 +59,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
             val launcher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.StartIntentSenderForResult(),
                 onResult = { result ->
-                    if(result.resultCode == Activity.RESULT_OK) {
+                    if (result.resultCode == Activity.RESULT_OK) {
                         coroutineScope.launch {
                             val signInResult = googleAuthUiClient.signInWithIntent(
                                 intent = result.data ?: return@launch
@@ -69,7 +71,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
             )
 
             LaunchedEffect(key1 = state.isSignInSuccessfull) {
-                if(state.isSignInSuccessfull) {
+                if (state.isSignInSuccessfull) {
                     Toast.makeText(
                         context,
                         "Sign in successful",
@@ -96,7 +98,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
             )
         }
         composable(Screen.HomeScreen.name) {
-            ProfileScreen(
+            HomeScreen(
                 userData = googleAuthUiClient.getSignedInUser(),
                 onSignOut = {
                     coroutineScope.launch {
@@ -109,9 +111,13 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
 
                         navController.popBackStack()
                     }
+                },
+                onSearchClick = {
+                    navController.navigate(route = Screen.SearchScreen.name)
                 }
             )
         }
+
 
         composable("calendar") {
             CalendarMonthScreen(
@@ -149,6 +155,25 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                     navController.popBackStack()
                 },
             )
+        }
+        composable(route = Screen.SearchScreen.name) {
+            SearchScreen(
+                onBackClick = { navController.popBackStack() },
+                onEventClick = { navController.navigate(Screen.ListEventScreen.name) })
+        }
+
+        composable(route = Screen.InteractWithTaskScreen.name) {
+            InteractWithTaskScreen(onBack = { navController.popBackStack() }, onSave = {})
+        }
+
+        composable(route = Screen.ListEventScreen.name) {
+            googleAuthUiClient.getSignedInUser()
+                ?.let { it1 ->
+                    ListEventScreen(
+                        userData = it1,
+                        onEventList = { navController.navigate(Screen.InteractWithTaskScreen.name) })
+                }
+
         }
     }
 }
