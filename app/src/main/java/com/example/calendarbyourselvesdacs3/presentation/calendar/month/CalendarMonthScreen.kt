@@ -12,11 +12,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.MonthDays
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarMonthTopBar
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarView
 import org.orbitmvi.orbit.compose.collectAsState
@@ -30,6 +29,9 @@ fun CalendarMonthScreen(
     onNavigateDay: (LocalDate) -> Unit,
 //    onNavigateExport: () -> Unit,
 //    onNavigateImport: () -> Unit,
+    userData: UserData?,
+    onSignOut: () -> Unit,
+    onSearchClick: () -> Unit
 ) {
     val state by viewModel.collectAsState()
 
@@ -51,6 +53,9 @@ fun CalendarMonthScreen(
                 onReturnToDateClicked = {
                     viewModel.onResetCalendarDate()
                 },
+                userData = userData,
+                onSignOut = onSignOut,
+                onSearchClick = onSearchClick
             )
         },
     ) {

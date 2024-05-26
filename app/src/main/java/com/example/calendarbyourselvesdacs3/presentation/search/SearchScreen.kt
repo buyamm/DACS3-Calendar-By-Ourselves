@@ -66,8 +66,12 @@ fun SearchScreen(
                     imageVector = Icons.Default.Close,
                     contentDescription = null,
                     modifier = Modifier.clickable {
-                        text = ""
-                        onSearch = false
+                        if (text == ""){
+                            onBackClick()
+                        }else{
+                            text = ""
+                            onSearch = false
+                        }
                     }.padding(all = 1.dp))
             },
         ) {

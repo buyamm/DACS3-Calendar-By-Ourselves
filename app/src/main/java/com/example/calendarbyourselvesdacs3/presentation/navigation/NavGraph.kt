@@ -22,7 +22,6 @@ import com.example.calendarbyourselvesdacs3.presentation.calendar.month.Calendar
 import com.example.calendarbyourselvesdacs3.presentation.event.InteractWithTaskScreen
 import com.example.calendarbyourselvesdacs3.presentation.event.ListEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.events.create.CreateEventScreen
-import com.example.calendarbyourselvesdacs3.presentation.home.HomeScreen
 import com.example.calendarbyourselvesdacs3.presentation.search.SearchScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
@@ -52,7 +51,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
 
             LaunchedEffect(key1 = Unit) {
                 if (googleAuthUiClient.getSignedInUser() != null) {
-                    navController.navigate(Screen.HomeScreen.name)
+                    navController.navigate("calendar")
                 }
             }
 
@@ -97,8 +96,36 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                 }
             )
         }
-        composable(Screen.HomeScreen.name) {
-            HomeScreen(
+//        composable(Screen.HomeScreen.name) {
+//            HomeScreen(
+//                userData = googleAuthUiClient.getSignedInUser(),
+//                onSignOut = {
+//                    coroutineScope.launch {
+//                        googleAuthUiClient.signOut()
+//                        Toast.makeText(
+//                            context,
+//                            "Signed out",
+//                            Toast.LENGTH_LONG
+//                        ).show()
+//
+//                        navController.popBackStack()
+//                    }
+//                },
+//                onSearchClick = {
+//                    navController.navigate(route = Screen.SearchScreen.name)
+//                }
+//            )
+//        }
+
+
+        composable("calendar") {
+            CalendarMonthScreen(
+                onNavigateCreateEvent = { date ->
+                    navController.navigate("events/create?date=${date.navArg()}")
+                },
+                onNavigateDay = { date ->
+                    navController.navigate("calendar/day?date=${date.navArg()}")
+                },
                 userData = googleAuthUiClient.getSignedInUser(),
                 onSignOut = {
                     coroutineScope.launch {
@@ -114,18 +141,6 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                 },
                 onSearchClick = {
                     navController.navigate(route = Screen.SearchScreen.name)
-                }
-            )
-        }
-
-
-        composable("calendar") {
-            CalendarMonthScreen(
-                onNavigateCreateEvent = { date ->
-                    navController.navigate("events/create?date=${date.navArg()}")
-                },
-                onNavigateDay = { date ->
-                    navController.navigate("calendar/day?date=${date.navArg()}")
                 }
             )
         }
