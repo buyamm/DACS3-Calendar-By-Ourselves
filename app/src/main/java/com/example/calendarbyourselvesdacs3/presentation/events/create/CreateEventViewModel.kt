@@ -3,6 +3,7 @@ package com.example.calendarbyourselvesdacs3.presentation.events.create
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.example.calendarbyourselvesdacs3.data.remote.FirebaseRealtime
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.EventsOfDate
 import com.example.calendarbyourselvesdacs3.presentation.navigation.localDateArg
 import com.google.firebase.database.DataSnapshot
@@ -12,6 +13,7 @@ import com.google.firebase.database.getValue
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import org.json.JSONArray
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.syntax.simple.intent
 import org.orbitmvi.orbit.syntax.simple.postSideEffect
@@ -20,6 +22,7 @@ import org.orbitmvi.orbit.viewmodel.container
 import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
+import kotlin.reflect.typeOf
 
 @HiltViewModel
 class CreateEventViewModel @Inject constructor(
@@ -27,9 +30,7 @@ class CreateEventViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel(), ContainerHost<CreateEventViewModel.State, CreateEventViewModel.SideEffect> {
 
-    //firebase realtime
-    val database = Firebase.database
-    val myRef = database.getReference("Event")
+    val myRef = FirebaseRealtime().myRef
 
     override val container = container<State, SideEffect>(
         initialState = State(),
