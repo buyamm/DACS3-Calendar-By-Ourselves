@@ -24,8 +24,5 @@ class SignInViewModel:ViewModel() {
         _uiState.update { SignInState() }
     }
 
-    fun test(){
-
-    }
 
 }

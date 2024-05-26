@@ -3,7 +3,10 @@ package com.example.calendarbyourselvesdacs3.presentation.events.create
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.EventsOfDate
 import com.example.calendarbyourselvesdacs3.presentation.navigation.localDateArg
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.syntax.simple.intent
@@ -19,6 +22,10 @@ class CreateEventViewModel @Inject constructor(
     //them sự kiện
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel(), ContainerHost<CreateEventViewModel.State, CreateEventViewModel.SideEffect> {
+
+    //firebase realtime
+    val database = Firebase.database
+    val myRef = database.getReference("Event")
 
     override val container = container<State, SideEffect>(
         initialState = State(),
@@ -58,7 +65,7 @@ class CreateEventViewModel @Inject constructor(
     //tạo sự kiện
     fun onAddEvent(
         title: String,
-        description: String?,
+        description: String,
     ) {
         intent {
             val date = state.date ?: return@intent
@@ -66,6 +73,10 @@ class CreateEventViewModel @Inject constructor(
 
             //Test
             Log.d("TestEvent", date.toString() + " " + time.toString() + " " + title)
+
+            //
+            var eventsOfDate = EventsOfDate(title = title, date = date.toString())
+            myRef.child(date.toString()).setValue(eventsOfDate)
 
 
 
