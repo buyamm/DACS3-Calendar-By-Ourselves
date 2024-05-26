@@ -1,5 +1,6 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Restore
@@ -14,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -62,11 +65,20 @@ private fun ReturnToDateButton(onClick: () -> Unit) {
 private fun DateTitle(date: LocalDate) {
     Row {
         val monthText = date.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
-        Text(
-            modifier = Modifier.alpha(.65f),
-            text = "${date.year} / ",
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        Text(text = monthText)
+        Column {
+            Text(text = monthText)
+            Text(
+                modifier = Modifier.alpha(.65f),
+                text = date.year.toString(),
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 12.sp
+            )
+        }
     }
+}
+
+@Composable
+@Preview(showBackground = true)
+fun showBg(){
+    DateTitle(date = LocalDate.now())
 }

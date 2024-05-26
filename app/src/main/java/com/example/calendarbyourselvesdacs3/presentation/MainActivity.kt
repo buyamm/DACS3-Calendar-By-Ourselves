@@ -12,6 +12,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.example.calendarbyourselvesdacs3.presentation.navigation.NavGraph
 import com.example.calendarbyourselvesdacs3.ui.theme.CalendarByOurselvesDACS3Theme
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -35,6 +37,11 @@ class MainActivity : ComponentActivity() {
 
 //                    val viewModel = viewModel<MainViewModel>()
                     NavGraph(viewModel = viewModel, context = applicationContext)
+
+
+
+//                    ============= TEST =============
+
                 }
             }
         }
