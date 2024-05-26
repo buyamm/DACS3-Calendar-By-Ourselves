@@ -43,7 +43,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun ListEventScreen(
     userData: UserData,
-    onEventList: () -> Unit
+    onEventClick: () -> Unit,
+    onBack: () -> Unit
 ) {
     val data = remember {
         mutableStateListOf<Task>()
@@ -59,7 +60,7 @@ fun ListEventScreen(
     val scope = rememberCoroutineScope()
     LazyColumn(contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
         item {
-            ProfileHeaderComponent(photoUrl = userData.profilPictureUrl.toString())
+            ProfileHeaderComponent(photoUrl = userData.profilPictureUrl.toString(), onBack = onBack)
         }
 
         item {
@@ -135,7 +136,7 @@ fun ListEventScreen(
                     }
                 },
                 dismissContent = {
-                    EventComponent(task = it, onEventClick = onEventList)
+                    EventComponent(task = it, onEventClick = onEventClick)
                 }
             )
         }

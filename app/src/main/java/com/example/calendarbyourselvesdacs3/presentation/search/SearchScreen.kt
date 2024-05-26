@@ -24,7 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.calendarbyourselvesdacs3.data.api.MockApi
-import com.example.calendarbyourselvesdacs3.presentation.event.EventComponent
+import com.example.calendarbyourselvesdacs3.presentation.event.EventWithDateComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -78,7 +78,7 @@ fun SearchScreen(
             if(onSearch){
                 LazyColumn(contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
                     items(MockApi.taskList){
-                        EventComponent(task = it, onEventClick = onEventClick)
+                        EventWithDateComponent(task = it, onEventClick = onEventClick)
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                 }

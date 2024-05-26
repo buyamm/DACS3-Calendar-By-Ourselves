@@ -3,7 +3,6 @@ package com.example.calendarbyourselvesdacs3.presentation.calendar.month.compone
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -31,10 +30,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import java.time.LocalDate
@@ -82,7 +81,6 @@ fun CalendarMonthTopBar(
                         .size(30.dp)
                         .clip(CircleShape)
                         .clickable { expanded = true }
-                        .padding(all = 12.dp)
                     ,
                     contentScale = ContentScale.Crop
                 )

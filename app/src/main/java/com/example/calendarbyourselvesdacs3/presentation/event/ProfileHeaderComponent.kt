@@ -1,5 +1,6 @@
 package com.example.listeventui.presentation.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +21,8 @@ import coil.compose.AsyncImage
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileHeaderComponent(
-    photoUrl: String
+    photoUrl: String,
+    onBack: () -> Unit
 ) {
 
     Row(
@@ -28,7 +30,7 @@ fun ProfileHeaderComponent(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(imageVector = Icons.Default.ArrowBackIosNew, contentDescription = null)
+        Icon(imageVector = Icons.Default.ArrowBackIosNew, contentDescription = null, modifier = Modifier.clickable { onBack() })
         AsyncImage(
             model = photoUrl,
             contentDescription = null,

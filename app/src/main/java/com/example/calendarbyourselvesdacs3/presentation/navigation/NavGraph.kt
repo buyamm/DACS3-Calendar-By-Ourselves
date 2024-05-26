@@ -119,6 +119,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
 //        }
 
 
+//        calendar - home page
         composable("calendar") {
             CalendarMonthScreen(
                 onNavigateCreateEvent = { date ->
@@ -187,7 +188,9 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                 ?.let { it1 ->
                     ListEventScreen(
                         userData = it1,
-                        onEventList = { navController.navigate(Screen.InteractWithTaskScreen.name) })
+                        onEventClick = { navController.navigate(Screen.InteractWithTaskScreen.name) },
+                        onBack = { navController.popBackStack() }
+                    )
                 }
 
         }
