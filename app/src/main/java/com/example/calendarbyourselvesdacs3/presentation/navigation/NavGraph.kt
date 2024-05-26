@@ -48,9 +48,10 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
 
             val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+            //Lưu trạng thái khi đăng nhập thành công => hiển thị luôn trang chủ
             LaunchedEffect(key1 = Unit) {
                 if(googleAuthUiClient.getSignedInUser() != null) {
-                    navController.navigate(Screen.HomeScreen.name)
+                    navController.navigate("calendar")
                 }
             }
 
