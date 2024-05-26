@@ -74,7 +74,7 @@ fun SearchScreen(
             if(onSearch){
                 LazyColumn(contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
                     items(MockApi.taskList){
-                        EventComponent(task = it, onTaskClick = onEventClick)
+                        EventComponent(task = it, onEventClick = onEventClick)
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                 }

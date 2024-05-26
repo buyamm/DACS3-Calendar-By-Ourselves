@@ -67,7 +67,8 @@ dependencies {
     implementation(libs.googleid)
 
     // material for swipe
-    implementation(libs.androidx.compose.material)
+//    implementation(libs.androidx.compose.material)
+//    implementation(libs.androidx.material3.android)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -3,7 +3,7 @@ package com.example.calendarbyourselvesdacs3.data.api
 import com.example.listeventui.data.Task
 
 object MockApi {
-    val taskList = mutableListOf(
+    val taskList = listOf(
         Task(
             1,
             "Do Laundry",
