@@ -16,12 +16,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUiClient
+import com.example.calendarbyourselvesdacs3.presentation.event.InteractWithTaskScreen
+import com.example.calendarbyourselvesdacs3.presentation.event.ListEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.home.HomeScreen
 import com.example.calendarbyourselvesdacs3.presentation.search.SearchScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
-import com.example.calendarbyourselvesdacs3.presentation.event.InteractWithTaskScreen
-import com.example.calendarbyourselvesdacs3.presentation.event.ListEventScreen
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 
@@ -38,7 +38,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
         )
     }
 
-    NavHost(navController = navController, startDestination = Screen.ListEventScreen.name) {
+    NavHost(navController = navController, startDestination = Screen.SignInScreen.name) {
         composable(Screen.SignInScreen.name) {
 
             val state by viewModel.uiState.collectAsStateWithLifecycle()
