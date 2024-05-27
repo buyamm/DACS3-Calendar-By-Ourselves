@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +28,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -66,24 +68,28 @@ fun CalendarCell(
                 } else if (date.isInMonth) {
                     it.background(appColors.inMonthBackground)
                 } else {
-                    it.background(appColors.outOfMonthBackground).graphicsLayer {
-                        alpha = 0.5f
-                    }
+                    it
+                        .background(appColors.outOfMonthBackground)
+                        .graphicsLayer {
+                            alpha = 0.5f
+                        }
                 }
             }
             .clickable { onCellClicked(date) }
     ) {
         Log.d("----------------------------->", date.date.toString())
         Column(
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(top = 6.dp)
+            modifier = Modifier.padding(top = 6.dp).height(36.dp)
         ) {
             Text(
                 modifier =
                 if (isToday) {
 
-                    Modifier.background(shape = CircleShape, color = Color.White).size(24.dp)
+                    Modifier
+                        .background(shape = CircleShape, color = Color.White)
+                        .size(22.dp)
 
                             }
                 else {
@@ -103,7 +109,7 @@ fun CalendarCell(
                     imageVector = Icons.Rounded.Brightness1,
                     contentDescription = null,
                     tint = Color.Red,
-                    modifier = Modifier.size(6.dp).padding(top = 6.dp)
+                    modifier = Modifier.size(6.dp)
                 )
             }
         }
@@ -116,6 +122,7 @@ fun CalendarCell(
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 val value = snapshot.getValue(Info::class.java)
+//                Log.d("000000000000", value?.date.toString())
                 if (value != null)
                     stateColor = true
                 else

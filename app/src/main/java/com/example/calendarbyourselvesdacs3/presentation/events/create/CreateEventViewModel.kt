@@ -76,9 +76,6 @@ class CreateEventViewModel @Inject constructor(
             val date = state.date ?: return@intent
             val time = state.time ?: return@intent
 
-            //Test
-            Log.d("TestEvent", date.toString() + " " + time.toString() + " " + title)
-
             //
             var eventsOfDate = EventsOfDate(title = title, date = date.toString())
             myRef.child(date.toString()).setValue(eventsOfDate).addOnCompleteListener{
@@ -86,24 +83,6 @@ class CreateEventViewModel @Inject constructor(
             }.addOnFailureListener {
                 Log.d("ko ổn", "ajsdkfjkajsdkl;f")
             }
-
-
-
-            // Read from the database
-            myRef.addValueEventListener(object: ValueEventListener {
-
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    // This method is called once with the initial value and again
-                    // whenever data at this location is updated.
-                    val value = snapshot.getValue()
-                    Log.d("Test------->", "Value is: " + value)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Log.w("Test------->", "Failed to read value.", error.toException())
-                }
-
-            })
 
 
 
