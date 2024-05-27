@@ -1,22 +1,47 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month.component
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Brightness1
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.calendarbyourselvesdacs3.data.remote.FirebaseRealtime
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.CalendarDate
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 @Composable
 fun CalendarCell(
@@ -28,29 +53,92 @@ fun CalendarCell(
     onCellClicked: (CalendarDate) -> Unit = {},
 ) {
     val appColors = LocalAppColors.current
+    val myRef = FirebaseRealtime().myRef
+    var stateColor by remember { mutableStateOf(false) }
 
     Box(
+        contentAlignment = Alignment.TopCenter,
         modifier = Modifier
             .size(cellSize)
             .calendarCellPadding(index)
             .clip(RoundedCornerShape(2.dp))
             .let {
                 if (isToday) {
-                    it.background(appColors.currentDayBackground)
+                    it.background(appColors.inMonthBackground)
                 } else if (date.isInMonth) {
                     it.background(appColors.inMonthBackground)
                 } else {
-                    it.background(appColors.outOfMonthBackground)
+                    it
+                        .background(appColors.outOfMonthBackground)
+                        .graphicsLayer {
+                            alpha = 0.5f
+                        }
                 }
             }
-            .clickable { onCellClicked(date) },
+            .clickable { onCellClicked(date) }
     ) {
-        Text(
-//            modifier = Modifier.padding(start = 3.dp), //3
-            text = "${date.date.dayOfMonth}",
-            color = appColors.calendarContent,
-            fontSize = 11.sp, //11
-        )
-        renderCell()
+        Log.d("----------------------------->", date.date.toString())
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(top = 6.dp).height(36.dp)
+        ) {
+            Text(
+                modifier =
+                if (isToday) {
+
+                    Modifier
+                        .background(shape = CircleShape, color = Color.White)
+                        .size(22.dp)
+
+                            }
+                else {
+
+                    Modifier
+
+                     },
+                text = "${date.date.dayOfMonth}",
+                color = if (isToday) appColors.calendarContentIsToday else appColors.calendarContent,
+                fontSize = 14.sp,
+                fontWeight = if (isToday) FontWeight.Bold else FontWeight.W400,
+                textAlign = TextAlign.Center
+            )
+            //hien thi cac dau cham
+            if (stateColor) {
+                Icon(
+                    imageVector = Icons.Rounded.Brightness1,
+                    contentDescription = null,
+                    tint = Color.Red,
+                    modifier = Modifier.size(6.dp)
+                )
+            }
+        }
+
+
+        //        ============ Đánh dấu sự kiện được thêm vào lịch  ============
+        myRef.child(date.date.toString()).addValueEventListener(object : ValueEventListener {
+
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+                val value = snapshot.getValue(Info::class.java)
+//                Log.d("000000000000", value?.date.toString())
+                if (value != null)
+                    stateColor = true
+                else
+                    stateColor = false
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.w("Test------->", "Failed to read value.", error.toException())
+            }
+
+        })
+
+
     }
 }
+
+data class Info(val date: String? = null)
+

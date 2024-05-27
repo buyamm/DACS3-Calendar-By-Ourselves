@@ -43,6 +43,7 @@ private val LightColorScheme = lightColorScheme(
 sealed interface AppColors {
     val calendarBackground: Color
     val calendarContent: Color
+    val calendarContentIsToday: Color
     val outOfMonthBackground: Color
     val inMonthBackground: Color
     val eventCountBackground: Color
@@ -51,6 +52,7 @@ sealed interface AppColors {
 
     data object Light : AppColors {
         override val calendarContent = Color(0xFF4E4E4E)
+        override val calendarContentIsToday = Color.White
         override val calendarBackground = Color(0xFFDFDFDF)
         override val outOfMonthBackground = Color(0xFFF1F1F1)
         override val currentDayBackground = Color(0xFFF4EBFC)
@@ -60,11 +62,12 @@ sealed interface AppColors {
     }
 
     data object Dark : AppColors {
-        override val calendarContent = Color(0xFFAFAFAF)
+        override val calendarContent = Color.White
+        override val calendarContentIsToday = Color.Black
         override val calendarBackground = Color(0xFF111111)
-        override val outOfMonthBackground = Color(0xFF1D1D1D)
-        override val currentDayBackground = Color(0xFF3F3A49)
-        override val inMonthBackground = Color(0xFF242424)
+        override val outOfMonthBackground = Color.Black
+        override val currentDayBackground = Color(0xFFf3f6f4)
+        override val inMonthBackground = Color.Black
         override val eventCountBackground = Color(0xFFFF3C3C)
         override val eventCountForeground = Color(0xFFFFFFFF)
     }

@@ -19,13 +19,17 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.calendarbyourselvesdacs3.data.api.MockApi
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.MonthDays
+import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
 import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarMonthTopBar
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarView
@@ -122,14 +126,16 @@ private fun Calendar(
         date = date,
         onCellClicked = { cellDate -> onDateClicked(cellDate.date) },
         renderCell = { cellDate ->
-            events[cellDate.date]?.let { count ->
-//                EventCountText(
-//                    modifier = Modifier
-//                        .align(Alignment.Center)
-//                        .alpha(if (cellDate.isInMonth) 1f else 0.6f),
-//                    count = count,
-//                )
-            }
+//            events[cellDate.date]?.let {
+//                Text(text = "akskksakkaka", style = TextStyle(color = Color.Red))
+//
+////                EventCountText(
+////                    modifier = Modifier
+////                        .align(Alignment.Center)
+////                        .alpha(if (cellDate.isInMonth) 1f else 0.6f),
+////                    count = count,
+////                )
+//            }
         },
     )
     Row(
