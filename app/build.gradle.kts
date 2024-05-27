@@ -74,6 +74,10 @@ dependencies {
 //    implementation(libs.androidx.material3.android)
 
 
+    // material for swipe
+//    implementation(libs.androidx.compose.material)
+//    implementation(libs.androidx.material3.android)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -143,4 +147,12 @@ dependencies {
     // Kotest
     testImplementation("io.kotest:kotest-assertions-core:5.6.2")
     testImplementation("io.kotest:kotest-runner-junit5:5.6.2")
+
+    //    Icon extended
+    implementation("androidx.compose.material:material-icons-extended:1.6.7")
+
+//    DateTime
+    implementation ("io.github.vanpra.compose-material-dialogs:datetime:0.8.1-rc")
+    coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:1.1.6")
+
 }
