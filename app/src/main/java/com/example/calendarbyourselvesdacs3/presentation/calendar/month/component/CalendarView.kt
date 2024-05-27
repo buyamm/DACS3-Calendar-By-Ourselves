@@ -65,8 +65,6 @@ fun CalendarView(
                         isToday = calendarDate.date == date,
                         onCellClicked = onCellClicked,
                         renderCell = {
-                            Log.d("=====90909090===-=-=-=->", calendarDate.toString())
-                            Text(text = "ssss", style = TextStyle(Color.Red))
                             renderCell(calendarDate)
                         },
                     )
