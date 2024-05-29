@@ -99,7 +99,7 @@ fun CalendarCell(
                      },
                 text = "${date.date.dayOfMonth}",
                 color = if (isToday) appColors.calendarContentIsToday else appColors.calendarContent,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 fontWeight = if (isToday) FontWeight.Bold else FontWeight.W400,
                 textAlign = TextAlign.Center
             )
