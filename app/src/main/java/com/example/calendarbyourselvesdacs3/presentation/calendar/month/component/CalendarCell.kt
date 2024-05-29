@@ -63,7 +63,14 @@ fun CalendarCell(
             .calendarCellPadding(index)
             .clip(RoundedCornerShape(2.dp))
             .let {
-                if (isToday) {
+                if(!date.isInMonth && isToday) {
+                    it
+                        .background(appColors.outOfMonthBackground)
+                        .graphicsLayer {
+                            alpha = 0.5f
+                        }
+                }
+                else if (isToday) {
                     it.background(appColors.inMonthBackground)
                 } else if (date.isInMonth) {
                     it.background(appColors.inMonthBackground)
@@ -88,7 +95,7 @@ fun CalendarCell(
                 if (isToday) {
 
                     Modifier
-                        .background(shape = CircleShape, color = Color.White)
+                        .background(shape = CircleShape, color = appColors.textColorIsCurrentDay)
                         .size(22.dp)
 
                             }
