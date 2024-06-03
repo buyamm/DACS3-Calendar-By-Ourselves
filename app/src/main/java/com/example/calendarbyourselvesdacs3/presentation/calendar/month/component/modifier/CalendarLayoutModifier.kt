@@ -28,7 +28,7 @@ fun Modifier.calendarLayout(
         with(density) {
             onLayout(
                 CalendarLayout(
-                    cellSize = (layout!!.size.width / 7.3f).toDp(), //7
+                    cellSize = (layout!!.size.width / 7.02f).toDp(), //7
                 ),
             )
         }

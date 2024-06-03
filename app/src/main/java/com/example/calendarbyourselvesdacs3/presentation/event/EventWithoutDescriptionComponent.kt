@@ -30,8 +30,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
+import com.example.calendarbyourselvesdacs3.ui.theme.AppColors
 import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
 import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
+import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
 import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
 import com.example.listeventui.data.Task
@@ -39,6 +41,7 @@ import com.example.listeventui.data.Task
 @Composable
 fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
     val taskColor = listOf(GreenColor, RedColor, DefaultColor, YellowColor).random()
+    val appColors = LocalAppColors.current
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -57,10 +60,10 @@ fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
                     modifier = Modifier
                         .size(16.dp)
                         .clip(CircleShape)
-                        .border(border = BorderStroke(3.dp, Color.Black), shape = CircleShape)
+                        .border(border = BorderStroke(3.dp, appColors.circleBoxAtHomeScreen), shape = CircleShape)
                 )
 
-                Divider(modifier = Modifier.width(6.dp), color = Color.Black)
+                Divider(modifier = Modifier.width(6.dp), color = appColors.dividerColor)
 
                 Row(
                     modifier = Modifier
@@ -101,7 +104,7 @@ fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
                     Divider(
                         modifier = Modifier
                             .width(6.dp)
-                            .weight(0.1f), color = Color.Black
+                            .weight(0.1f), color = appColors.dividerColor
                     )
 
                 }

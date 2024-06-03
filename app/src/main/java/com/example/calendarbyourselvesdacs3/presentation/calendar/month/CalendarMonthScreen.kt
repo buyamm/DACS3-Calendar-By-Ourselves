@@ -1,5 +1,6 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,17 +35,19 @@ import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarMonthTopBar
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarView
 import com.example.calendarbyourselvesdacs3.presentation.event.EventWithoutDescriptionComponent
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 import java.time.LocalDate
 
+@OptIn(ExperimentalPagerApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun CalendarMonthScreen(
     viewModel: CalendarMonthViewModel = hiltViewModel(),
     onNavigateCreateEvent: (LocalDate) -> Unit,
     onNavigateDay: (LocalDate) -> Unit,
-//    onNavigateExport: () -> Unit,
-//    onNavigateImport: () -> Unit,
     userData: UserData?,
     onSignOut: () -> Unit,
     onSearchClick: () -> Unit
@@ -64,14 +67,12 @@ fun CalendarMonthScreen(
             CalendarMonthTopBar(
                 date = state.calendarDate,
                 showReturnToDate = state.currentDate != state.calendarDate,
-//                onImportClicked = onNavigateImport,
-//                onExportClicked = onNavigateExport,
                 onReturnToDateClicked = {
                     viewModel.onResetCalendarDate()
                 },
                 userData = userData,
                 onSignOut = onSignOut,
-                onSearchClick = onSearchClick
+                onSearchClick = onSearchClick,
             )
         },
     ) {
@@ -79,10 +80,30 @@ fun CalendarMonthScreen(
             modifier = Modifier.padding(it),
         ) {
             if (state.monthDays != null) {
+                //Test
+//                val pagerState = rememberPagerState()
+//                HorizontalPager(
+//                    count = Int.MAX_VALUE,
+//                    state = pagerState,
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {page ->
+//                    viewModel.scrollMonth(page.toLong())
+//                    Calendar(
+//                        date = state.currentDate,
+//                        monthDays = state.monthDays!!,
+//                        onPreviousMonth = { viewModel.onPreviousMonth() },
+//                        onNextMonth = { viewModel.onNextMonth() },
+//                        onDateClicked = { date -> viewModel.onDateClicked(date) },
+//                    )
+//
+//
+//                }
+
+//                ===================================
+
                 Calendar(
                     date = state.currentDate,
                     monthDays = state.monthDays!!,
-                    events = state.events,
                     onPreviousMonth = { viewModel.onPreviousMonth() },
                     onNextMonth = { viewModel.onNextMonth() },
                     onDateClicked = { date -> viewModel.onDateClicked(date) },
@@ -113,7 +134,6 @@ fun CalendarMonthScreen(
 private fun Calendar(
     date: LocalDate,
     monthDays: MonthDays,
-    events: Map<LocalDate, Int>,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onDateClicked: (LocalDate) -> Unit,
@@ -126,16 +146,6 @@ private fun Calendar(
         date = date,
         onCellClicked = { cellDate -> onDateClicked(cellDate.date) },
         renderCell = { cellDate ->
-//            events[cellDate.date]?.let {
-//                Text(text = "akskksakkaka", style = TextStyle(color = Color.Red))
-//
-////                EventCountText(
-////                    modifier = Modifier
-////                        .align(Alignment.Center)
-////                        .alpha(if (cellDate.isInMonth) 1f else 0.6f),
-////                    count = count,
-////                )
-//            }
         },
     )
     Row(

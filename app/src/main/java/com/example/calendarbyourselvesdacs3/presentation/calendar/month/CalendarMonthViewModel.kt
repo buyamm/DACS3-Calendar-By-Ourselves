@@ -1,5 +1,6 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month
 
+import androidx.compose.foundation.rememberScrollState
 import androidx.lifecycle.ViewModel
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.GetMonthDays
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.MonthDays
@@ -17,7 +18,6 @@ import javax.inject.Inject
 class CalendarMonthViewModel @Inject constructor(
     dateProvider: () -> LocalDate,
     private val getMonthDays: GetMonthDays,
-//    private val getEventCountsForDates: GetEventCountsForDates,
 ) : ViewModel(), ContainerHost<CalendarMonthViewModel.State, CalendarMonthViewModel.SideEffect> {
 
     override val container = container<State, SideEffect>(
@@ -35,6 +35,13 @@ class CalendarMonthViewModel @Inject constructor(
             updateMonth(date.plusMonths(1))
         }
     }
+
+//    fun scrollMonth(page: Long) {
+//        intent {
+//            val date = state.calendarDate
+//            updateMonth2(date.minusMonths(page))
+//        }
+//    }
 
     fun onPreviousMonth() {
         intent {
@@ -62,16 +69,26 @@ class CalendarMonthViewModel @Inject constructor(
     context(SimpleSyntax<State, SideEffect>)
     private suspend fun updateMonth(date: LocalDate) {
         val newMonthDays = getMonthDays(date)
-//        val events = getEventCountsForDates(newMonthDays.map { it.date })
 
         reduce {
             state.copy(
                 monthDays = newMonthDays,
-//                events = events,
                 calendarDate = date,
             )
         }
     }
+
+    context(SimpleSyntax<State, SideEffect>)
+    private fun updateMonth2(date: LocalDate) {
+        val newMonthDays = getMonthDays(date)
+
+        state.copy(
+            monthDays = newMonthDays,
+            calendarDate = date,
+        )
+    }
+
+
 
     data class State(
         val currentDate: LocalDate,

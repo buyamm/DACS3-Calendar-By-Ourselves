@@ -43,6 +43,8 @@ sealed interface AppColors {
     val eventCountForeground: Color
     val currentDayBackground: Color
     val textColorIsCurrentDay: Color
+    val circleBoxAtHomeScreen: Color
+    val dividerColor: Color
 
     data object Light : AppColors {
         override val calendarContent = Color(0xFF4E4E4E)
@@ -54,6 +56,8 @@ sealed interface AppColors {
         override val eventCountBackground = Color(0xFFFF3C3C)
         override val eventCountForeground = Color(0xFFFFFFFF)
         override val textColorIsCurrentDay = Color.Black
+        override val circleBoxAtHomeScreen = Color.Black
+        override val dividerColor = Color.Black
     }
 
     data object Dark : AppColors {
@@ -66,7 +70,8 @@ sealed interface AppColors {
         override val eventCountBackground = Color(0xFFFF3C3C)
         override val eventCountForeground = Color(0xFFFFFFFF)
         override val textColorIsCurrentDay = Color.White
-
+        override val circleBoxAtHomeScreen = Color.LightGray
+        override val dividerColor = Color.LightGray
     }
 }
 

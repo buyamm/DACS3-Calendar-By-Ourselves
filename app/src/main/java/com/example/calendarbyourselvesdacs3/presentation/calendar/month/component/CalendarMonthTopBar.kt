@@ -45,8 +45,6 @@ import java.util.Locale
 fun CalendarMonthTopBar(
     date: LocalDate?,
     showReturnToDate: Boolean,
-//    onExportClicked: () -> Unit,
-//    onImportClicked: () -> Unit,
     onReturnToDateClicked: () -> Unit,
     userData: UserData?,
     onSignOut: () -> Unit,
