@@ -18,7 +18,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -38,6 +40,7 @@ import com.example.calendarbyourselvesdacs3.presentation.event.EventWithoutDescr
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 import java.time.LocalDate
@@ -81,13 +84,19 @@ fun CalendarMonthScreen(
         ) {
             if (state.monthDays != null) {
                 //Test
-//                val pagerState = rememberPagerState()
+//                val pagerState = rememberPagerState(initialPage = 0)
+//                val coroutineScope = rememberCoroutineScope()
+
 //                HorizontalPager(
 //                    count = Int.MAX_VALUE,
 //                    state = pagerState,
 //                    modifier = Modifier.fillMaxWidth()
-//                ) {page ->
-//                    viewModel.scrollMonth(page.toLong())
+//                ) { page ->
+//                    LaunchedEffect(key1 = page) {
+//                        coroutineScope.launch {
+//                            viewModel.scrollMonth(page.toLong())
+//                        }
+//                    }
 //                    Calendar(
 //                        date = state.currentDate,
 //                        monthDays = state.monthDays!!,
@@ -95,9 +104,8 @@ fun CalendarMonthScreen(
 //                        onNextMonth = { viewModel.onNextMonth() },
 //                        onDateClicked = { date -> viewModel.onDateClicked(date) },
 //                    )
-//
-//
 //                }
+
 
 //                ===================================
 

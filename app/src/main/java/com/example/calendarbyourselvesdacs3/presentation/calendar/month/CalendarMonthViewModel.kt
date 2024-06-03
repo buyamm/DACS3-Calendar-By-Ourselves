@@ -29,6 +29,34 @@ class CalendarMonthViewModel @Inject constructor(
         },
     )
 
+//    fun scrollMonth(page: Long) {
+//        intent {
+//            val currentPage = state.currentPage
+//            val pageDifference = page - currentPage
+//
+//            if (pageDifference != 0L) {
+//                val date = state.currentDate
+//                updateMonth2(date.plusMonths(pageDifference))
+//                reduce {
+//                    state.copy(currentPage = page)
+//                }
+//            }
+//        }
+//    }
+//
+//
+//    context(SimpleSyntax<State, SideEffect>)
+//    private suspend fun updateMonth2(date: LocalDate) {
+//        val newMonthDays = getMonthDays(date)
+//        reduce {
+//            state.copy(
+//                monthDays = newMonthDays,
+//                calendarDate = date,
+//            )
+//        }
+//    }
+
+
     fun onNextMonth() {
         intent {
             val date = state.calendarDate
@@ -36,12 +64,6 @@ class CalendarMonthViewModel @Inject constructor(
         }
     }
 
-//    fun scrollMonth(page: Long) {
-//        intent {
-//            val date = state.calendarDate
-//            updateMonth2(date.minusMonths(page))
-//        }
-//    }
 
     fun onPreviousMonth() {
         intent {
@@ -78,16 +100,6 @@ class CalendarMonthViewModel @Inject constructor(
         }
     }
 
-    context(SimpleSyntax<State, SideEffect>)
-    private fun updateMonth2(date: LocalDate) {
-        val newMonthDays = getMonthDays(date)
-
-        state.copy(
-            monthDays = newMonthDays,
-            calendarDate = date,
-        )
-    }
-
 
 
     data class State(
@@ -95,6 +107,7 @@ class CalendarMonthViewModel @Inject constructor(
         val calendarDate: LocalDate = currentDate,
         val monthDays: MonthDays? = null,
         val events: Map<LocalDate, Int> = emptyMap(),
+        val currentPage: Long = 0L
     )
 
     sealed interface SideEffect {
