@@ -173,6 +173,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                 },
             )
         }
+
         composable(route = Screen.SearchScreen.name) {
             SearchScreen(
                 onBackClick = { navController.popBackStack() },
@@ -192,7 +193,6 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                         onBack = { navController.popBackStack() }
                     )
                 }
-
         }
     }
 }
