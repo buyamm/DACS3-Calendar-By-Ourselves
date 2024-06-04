@@ -25,20 +25,20 @@ object MockApi {
 //            "13:00",
 //            "14:00"
 //        ),
-//        Task(
-//            4,
-//            "Water Plants",
-//            "Water indoor and outdoor plants",
-//            "15:00",
-//            "16:00"
-//        ),
-//        Task(
-//            5,
-//            "Cook Dinner",
-//            "Prepare a meal for the family",
-//            "18:00",
-//            "19:00"
-//        ),
+        Task(
+            4,
+            "Water Plants",
+            "Water indoor and outdoor plants",
+            "15:00",
+            "16:00"
+        ),
+        Task(
+            5,
+            "Cook Dinner",
+            "Prepare a meal for the family",
+            "18:00",
+            "19:00"
+        ),
 //        Task(
 //            6,
 //            "Clean Bathrooms",
