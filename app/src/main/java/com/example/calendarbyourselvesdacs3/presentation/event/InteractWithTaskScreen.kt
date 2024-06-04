@@ -55,7 +55,7 @@ import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
 import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
 import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
 import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
-import com.example.listeventui.data.PairColor
+import com.example.calendarbyourselvesdacs3.domain.model.event.PairColor
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
@@ -64,9 +64,9 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-//@Preview
 fun InteractWithTaskScreen(
     onBack: () -> Unit,
     onSave: () -> Unit
@@ -119,17 +119,17 @@ fun InteractWithTaskScreen(
             }
             item {
                 checkAllDayComponent()
-                Spacer(modifier = Modifier.height(20.dp))
+//                Spacer(modifier = Modifier.height(20.dp))
             }
-            item {
-                dataAndTimePickerComponent()
-                Spacer(modifier = Modifier.height(30.dp))
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .height(2.dp)
-                )
-            }
+//            item {
+//                dataAndTimePickerComponent()
+//                Spacer(modifier = Modifier.height(30.dp))
+//                Divider(
+//                    modifier = Modifier
+//                        .fillMaxWidth(1f)
+//                        .height(2.dp)
+//                )
+//            }
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 descriptionComponent()
@@ -191,7 +191,7 @@ fun EditFieldTitleComponent() {
 }
 
 @Composable
-//@Preview
+
 fun checkAllDayComponent() {
     var isCheckedAllDay by remember {
         mutableStateOf(false)
@@ -222,10 +222,18 @@ fun checkAllDayComponent() {
             )
         }
     }
+    Spacer(modifier = Modifier.height(20.dp))
+    dataAndTimePickerComponent(isCheckedAllDay)
+    Spacer(modifier = Modifier.height(30.dp))
+    Divider(
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .height(2.dp)
+    )
 }
 
 @Composable
-fun dataAndTimePickerComponent() {
+fun dataAndTimePickerComponent(isCheckAllDay: Boolean) {
     val context = LocalContext.current
     var pickedStartData by remember {
         mutableStateOf(LocalDate.now())
@@ -269,6 +277,9 @@ fun dataAndTimePickerComponent() {
         }
     }
 
+    val defaultStartTime = "7:00 AM"
+    val defaultEndTime = "12:00 PM"
+
     val startDateDialogState = rememberMaterialDialogState()
     val startTimeDialogState = rememberMaterialDialogState()
     val endDateDialogState = rememberMaterialDialogState()
@@ -286,27 +297,51 @@ fun dataAndTimePickerComponent() {
             ) {
                 Text(
                     text = formattedStartDate,
-                    modifier = Modifier.clickable { startDateDialogState.show() },
-                    fontSize = 17.sp
+                    modifier = if (isCheckAllDay) {
+                        Modifier
+                    } else {
+                        Modifier.clickable {
+                            startDateDialogState.show()
+                        }
+                    },
+                    fontSize = 17.sp,
+                    color = if (isCheckAllDay) Color.LightGray else Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = formattedStartTime,
-                    modifier = Modifier.clickable { startTimeDialogState.show() },
-                    fontSize = 17.sp
+                    text = if(isCheckAllDay) defaultStartTime else formattedStartTime,
+                    modifier = if (isCheckAllDay) {
+                        Modifier
+                    } else {
+                        Modifier.clickable { startTimeDialogState.show() }
+                    },
+                    fontSize = 17.sp,
+                    color = if (isCheckAllDay) Color.LightGray else Color.Black
                 )
             }
             Row {
                 Text(
                     text = formattedEndDate,
-                    modifier = Modifier.clickable { endDateDialogState.show() },
-                    fontSize = 17.sp
+                    modifier = if (isCheckAllDay) {
+                        Modifier
+                    } else {
+                        Modifier.clickable {
+                            endDateDialogState.show()
+                        }
+                    },
+                    fontSize = 17.sp,
+                    color = if (isCheckAllDay) Color.LightGray else Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = formattedEndTime,
-                    modifier = Modifier.clickable { endTimeDialogState.show() },
-                    fontSize = 17.sp
+                    text = if(isCheckAllDay) defaultEndTime else formattedEndTime,
+                    modifier = if (isCheckAllDay) {
+                        Modifier
+                    } else {
+                        Modifier.clickable { endTimeDialogState.show() }
+                    },
+                    fontSize = 17.sp,
+                    color = if (isCheckAllDay) Color.LightGray else Color.Black
                 )
             }
         }

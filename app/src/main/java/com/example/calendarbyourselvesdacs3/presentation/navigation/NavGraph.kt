@@ -43,7 +43,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
 
     NavHost(
         navController = navController,
-        startDestination = Screen.SignInScreen.name
+        startDestination =  Screen.InteractWithTaskScreen.name
     ) {
         composable(Screen.SignInScreen.name) {
 

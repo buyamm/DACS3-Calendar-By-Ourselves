@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.event
+package com.example.calendarbyourselvesdacs3.presentation.event.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -36,9 +36,8 @@ import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
 import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
 import com.example.listeventui.data.Task
 
-
 @Composable
-fun EventComponent(task: Task, onEventClick: () -> Unit) {
+fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
     val taskColor = listOf(GreenColor, RedColor, DefaultColor, YellowColor).random()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -52,7 +51,6 @@ fun EventComponent(task: Task, onEventClick: () -> Unit) {
                 fontFamily = FontFamily(Font(R.font.nunito_bold)),
                 textAlign = TextAlign.Center
             )
-
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -82,28 +80,19 @@ fun EventComponent(task: Task, onEventClick: () -> Unit) {
                             text = task.title,
                             fontFamily = FontFamily(Font(R.font.nunito_bold)),
                             modifier = Modifier.padding(
-                                start = 12.dp,
-                                top = 12.dp
+                                start = 8.dp,
+                                top = 8.dp
                             ),
                             color = Color.White,
                             fontSize = 20.sp
                         )
 
-                        if (task.description != null) {
-                            Text(
-                                text = task.description,
-                                fontFamily = FontFamily(Font(R.font.nunito_bold)),
-                                modifier = Modifier.padding(start = 12.dp),
-                                color = Color.White
-                            )
-                        }
-
                         Text(
                             text = "${task.startTime} - ${task.endTime}",
                             fontFamily = FontFamily(Font(R.font.nunito_bold)),
                             modifier = Modifier.padding(
-                                start = 12.dp,
-                                bottom = 12.dp
+                                start = 8.dp,
+                                bottom = 8.dp
                             ),
                             color = Color.White
                         )

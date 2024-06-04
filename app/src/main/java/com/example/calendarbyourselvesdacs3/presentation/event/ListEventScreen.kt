@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.calendarbyourselvesdacs3.data.api.MockApi
 import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
+import com.example.calendarbyourselvesdacs3.presentation.event.common.EventComponent
 import com.example.listeventui.data.Task
 import com.example.listeventui.presentation.component.ProfileHeaderComponent
 import com.example.listeventui.presentation.component.WelcomMessageComponent

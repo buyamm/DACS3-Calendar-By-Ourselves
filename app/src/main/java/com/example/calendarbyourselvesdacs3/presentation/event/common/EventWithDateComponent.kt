@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.event
+package com.example.calendarbyourselvesdacs3.presentation.event.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -37,7 +37,7 @@ import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
 import com.example.listeventui.data.Task
 
 @Composable
-fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
+fun EventWithDateComponent(task: Task, onEventClick: () -> Unit) {
     val taskColor = listOf(GreenColor, RedColor, DefaultColor, YellowColor).random()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -46,11 +46,27 @@ fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "${task.startTime}\nAM",
-                fontFamily = FontFamily(Font(R.font.nunito_bold)),
-                textAlign = TextAlign.Center
-            )
+            Column {
+                Text(
+                    text = "Aug",
+                    fontFamily = FontFamily(Font(R.font.nunito_bold)),
+                    textAlign = TextAlign.Center,
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "13",
+                    fontFamily = FontFamily(Font(R.font.nunito_bold)),
+                    textAlign = TextAlign.Center,
+                    fontSize = 12.sp
+                )
+                Text(
+                    text = "2024",
+                    fontFamily = FontFamily(Font(R.font.nunito_bold)),
+                    textAlign = TextAlign.Center,
+                    fontSize = 12.sp
+                )
+            }
+
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
