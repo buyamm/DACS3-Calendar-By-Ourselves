@@ -85,8 +85,8 @@ class EventViewModel @Inject constructor(
     }
 
     fun addEvent() {
-        val startDay = handleDateTime(_uiState.value.startDate, _uiState.value.startTime)
-        val endDay = handleDateTime(_uiState.value.endDate, _uiState.value.endTime)
+        val startDay = handleDateTimeToTimeStamp(_uiState.value.startDate, _uiState.value.startTime)
+        val endDay = handleDateTimeToTimeStamp(_uiState.value.endDate, _uiState.value.endTime)
 
         var event = Event(
             userId = user?.userId,
@@ -106,9 +106,9 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun updateEvent(eventId: String){
-        val startDay = handleDateTime(_uiState.value.startDate, _uiState.value.startTime)
-        val endDay = handleDateTime(_uiState.value.endDate, _uiState.value.endTime)
+    fun updateEvent(eventId: String) {
+        val startDay = handleDateTimeToTimeStamp(_uiState.value.startDate, _uiState.value.startTime)
+        val endDay = handleDateTimeToTimeStamp(_uiState.value.endDate, _uiState.value.endTime)
 
         val event = Event(
             documentId = eventId,
@@ -122,7 +122,7 @@ class EventViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            repository.updateEvent(event){completed ->
+            repository.updateEvent(event) { completed ->
                 _uiState.update {
                     it.copy(eventUpdatedStatus = completed)
                 }
@@ -130,7 +130,20 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun handleDateTime(date: LocalDate?, time: LocalTime?): Timestamp {
+
+    fun getEvent(eventId: String) {
+        viewModelScope.launch {
+            repository.getEvent(eventId = eventId, onError = {}) { event ->
+                if (event != null) {
+                    setEditField(event)
+                }
+            }
+        }
+    }
+
+
+
+    fun handleDateTimeToTimeStamp(date: LocalDate?, time: LocalTime?): Timestamp {
         val combineDateTime: LocalDateTime = LocalDateTime.of(date, time)
 
         val zoneId: ZoneId = ZoneId.of("Asia/Ho_Chi_Minh")
@@ -141,5 +154,51 @@ class EventViewModel @Inject constructor(
         val day: Timestamp = Timestamp(convertInstant)
 
         return day
+    }
+
+    fun handleTimeStampToDateTime(
+        timestamp: Timestamp,
+        onDate: (LocalDate) -> Unit,
+        onTime: (LocalTime) -> Unit
+    ) {
+        val dateTime: LocalDateTime = timestamp.toDate().toInstant()
+            .atZone(ZoneId.of("Asia/Ho_Chi_Minh"))
+            .toLocalDateTime()
+
+        onDate.invoke(dateTime.toLocalDate())
+        onTime.invoke(dateTime.toLocalTime())
+    }
+
+    fun setEditField(event: Event) {
+        var startDate: LocalDate? = null
+        var startTime: LocalTime? = null
+        var endDate: LocalDate? = null
+        var endTime: LocalTime? = null
+
+        handleTimeStampToDateTime(
+            event.startDay,
+            onDate = { startDate = it },
+            onTime = { startTime = it }
+        )
+
+        handleTimeStampToDateTime(
+            event.endDay,
+            onDate = { endDate = it },
+            onTime = { endTime = it }
+        )
+
+        _uiState.update {
+            it.copy(
+                title = event.title,
+                description = event.description,
+                colorIndex = event.colorIndex,
+                isCheckAllDay = event.isCheckAllDay,
+                isCheckNotification = event.isCheckNotification,
+                startDate = startDate,
+                endDate = endDate,
+                startTime = startTime,
+                endTime = endTime
+            )
+        }
     }
 }
