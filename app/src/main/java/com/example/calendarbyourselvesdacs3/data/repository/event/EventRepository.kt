@@ -90,8 +90,9 @@ class EventRepository {
             }
     }
 
-    suspend fun loadEventByDate(date: LocalDate, onAllEvents: (List<Event>) -> Unit) {
+    suspend fun loadEventByDate(userId: String, date: LocalDate, onAllEvents: (List<Event>) -> Unit) {
         eventsRef
+            .whereEqualTo("userId", userId)
             .whereEqualTo("startDay", date.toString())
             .get()
             .addOnSuccessListener {
@@ -105,8 +106,9 @@ class EventRepository {
             }
     }
 
-    suspend fun loadEventBySearch(queryValue: String, onAllEvents: (List<Event>) -> Unit) {
+    suspend fun loadEventBySearch(userId: String, queryValue: String, onAllEvents: (List<Event>) -> Unit) {
         eventsRef
+            .whereEqualTo("userId", userId)
             .whereEqualTo("startDay", queryValue)
             .whereEqualTo("title", queryValue)
             .whereEqualTo("description", queryValue)

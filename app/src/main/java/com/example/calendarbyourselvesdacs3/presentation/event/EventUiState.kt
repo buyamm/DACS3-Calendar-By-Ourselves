@@ -12,5 +12,8 @@ data class EventUiState(
     val endDate: LocalDate? = null,
     val endTime: LocalTime? = null,
     val isCheckAllDay: Boolean = false,
-    val isCheckNotification: Boolean = false
+    val isCheckNotification: Boolean = false,
+
+    val eventAddedStatus: Boolean = false,
+    val eventUpdatedStatus: Boolean = false,
 )

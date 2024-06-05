@@ -3,7 +3,7 @@ package com.example.calendarbyourselvesdacs3.domain.model.event
 import com.google.firebase.Timestamp
 
 data class Event(
-    val userId: String = "",
+    val userId: String? = "",
     val title: String = "",
     val description: String = "",
     val isCheckAllDay: Boolean = false,
