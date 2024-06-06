@@ -13,8 +13,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-@HiltViewModel
-class HomeViewModel @Inject constructor(
+
+class HomeViewModel  (
     private val repository: EventRepository,
     private val signInRepository: GoogleAuthUiClient
 ) : ViewModel() {

@@ -19,6 +19,7 @@ import androidx.navigation.navArgument
 import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUiClient
 import com.example.calendarbyourselvesdacs3.presentation.calendar.day.DayEventsScreen
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.CalendarMonthScreen
+import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
 import com.example.calendarbyourselvesdacs3.presentation.event.InteractWithTaskScreen
 import com.example.calendarbyourselvesdacs3.presentation.event.ListEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.events.create.CreateEventScreen
@@ -31,7 +32,7 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("StateFlowValueCalledInComposition", "ComposableDestinationInComposeScope")
 @Composable
-fun NavGraph(viewModel: SignInViewModel, context: Context) {
+fun NavGraph(signInViewModel: SignInViewModel, eventViewModel: EventViewModel, context: Context) {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
     val googleAuthUiClient by lazy {
@@ -47,7 +48,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
     ) {
         composable(Screen.SignInScreen.name) {
 
-            val state by viewModel.uiState.collectAsStateWithLifecycle()
+            val state by signInViewModel.uiState.collectAsStateWithLifecycle()
 
             //Lưu trạng thái khi đăng nhập thành công => hiển thị luôn trang chủ
             LaunchedEffect(key1 = Unit) {
@@ -64,7 +65,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                             val signInResult = googleAuthUiClient.signInWithIntent(
                                 intent = result.data ?: return@launch
                             )
-                            viewModel.onSignInResult(signInResult)
+                            signInViewModel.onSignInResult(signInResult)
                         }
                     }
                 }
@@ -79,7 +80,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
                     ).show()
 
                     navController.navigate("calendar")
-                    viewModel.resetState()
+                    signInViewModel.resetState()
                 }
             }
 
@@ -181,7 +182,7 @@ fun NavGraph(viewModel: SignInViewModel, context: Context) {
         }
 
         composable(route = Screen.InteractWithTaskScreen.name) {
-            InteractWithTaskScreen(onBack = { navController.popBackStack() }, onSave = {})
+            InteractWithTaskScreen(onBack = { navController.popBackStack() }, eventId = "")
         }
 
         composable(route = Screen.ListEventScreen.name) {

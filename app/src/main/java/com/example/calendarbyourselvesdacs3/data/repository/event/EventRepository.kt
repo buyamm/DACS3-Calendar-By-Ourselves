@@ -8,7 +8,7 @@ import java.time.LocalDate
 
 const val EVENTS_COLLECTION_REF = "events"
 
-class EventRepository {
+class EventRepository{
     private val eventsRef: CollectionReference =
         Firebase.firestore.collection(EVENTS_COLLECTION_REF)
 

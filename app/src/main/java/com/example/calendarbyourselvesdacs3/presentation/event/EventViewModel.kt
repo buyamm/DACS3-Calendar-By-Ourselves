@@ -21,12 +21,13 @@ import javax.inject.Inject
 
 // EventViewModel này dành cho InteractWithEventScreen
 @HiltViewModel
-class EventViewModel @Inject constructor(
-    private val repository: EventRepository,
+class EventViewModel @Inject constructor (
+    private val repository: EventRepository ,
     private val signInRepository: GoogleAuthUiClient
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EventUiState())
     val uiState = _uiState.asStateFlow()
+
 
     val user: UserData? = signInRepository.getSignedInUser()
 

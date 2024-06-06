@@ -8,9 +8,9 @@ import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
 
 object ColorUtil {
     val colors = listOf(
+        PairColor("Default color", DefaultColor),
         PairColor("Red color", RedColor),
         PairColor("Yellow color", YellowColor),
-        PairColor("Default color", DefaultColor),
         PairColor("Green color", GreenColor)
     )
 }
