@@ -1,1 +1,3 @@
-- vào NavGrap chỉnh link nhé
+- File cho việc @Provide: di/CalendarModule
+- File repository cho việc Crud: data/repository/event/EventRepository.kt
+- File viewmodel cho việc create event: presentation/event/EventViewModel.kt  ========= Đang làm create trong CRUD nên vào InteractWithEventScreen để check screen nớ nghen
