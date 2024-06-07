@@ -98,7 +98,7 @@ fun SearchScreen(
 //            }
 
             if(uiState.searchQuery.isNotEmpty()){
-//                
+                println("search query is not empty")
                 when(uiState.eventList){
                     is Resource.Error -> {
                         uiState.eventList.throwable?.message?.let { it1 ->
@@ -125,6 +125,7 @@ fun SearchScreen(
                                 }
                             }
                         }
+                        println("event list: " + uiState.eventList.data)
                     }
                 }
             }

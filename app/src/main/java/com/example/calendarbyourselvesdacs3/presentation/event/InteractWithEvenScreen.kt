@@ -1,5 +1,6 @@
 package com.example.calendarbyourselvesdacs3.presentation.event
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -39,7 +40,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -129,17 +129,8 @@ fun InteractWithTaskScreen(
             }
             item {
                 checkAllDayComponent(uiState, viewModel)
-//                Spacer(modifier = Modifier.height(20.dp))
             }
-//            item {
-//                dataAndTimePickerComponent()
-//                Spacer(modifier = Modifier.height(30.dp))
-//                Divider(
-//                    modifier = Modifier
-//                        .fillMaxWidth(1f)
-//                        .height(2.dp)
-//                )
-//            }
+
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 descriptionComponent(uiState, viewModel)
@@ -165,10 +156,6 @@ fun InteractWithTaskScreen(
                 pickColorComponent(uiState, viewModel)
                 Spacer(modifier = Modifier.height(24.dp))
             }
-
-//            items(count = 50) {
-//                androidx.compose.material3.ListItem(headlineContent = { Text(text = "Item $it") })
-//            }
         }
     }
 }
@@ -241,6 +228,7 @@ fun checkAllDayComponent(uiState: EventUiState, viewModel: EventViewModel) {
     )
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun dataAndTimePickerComponent(
     isCheckAllDay: Boolean,
@@ -262,33 +250,21 @@ fun dataAndTimePickerComponent(
 //        mutableStateOf(LocalTime.now())
 //    }
 
-    val formattedStartDate by remember {
-        derivedStateOf {
-            DateTimeFormatter
-                .ofPattern("E, MMM dd yyyy")
-                .format(uiState.startDate)
-        }
-    }
+    val formattedStartDate = DateTimeFormatter
+        .ofPattern("E, MMM dd yyyy")
+        .format(uiState.startDate)
 
-    val formattedEndDate by remember {
-        derivedStateOf {
-            DateTimeFormatter
-                .ofPattern("E, MMM dd yyyy")
-                .format(uiState.endDate)
-        }
-    }
 
-    val formattedStartTime by remember {
-        derivedStateOf {
-            DateTimeFormatter.ofPattern("hh:mm a").format(uiState.startTime)
-        }
-    }
+    val formattedEndDate = DateTimeFormatter
+        .ofPattern("E, MMM dd yyyy")
+        .format(uiState.endDate)
 
-    val formattedEndTime by remember {
-        derivedStateOf {
-            DateTimeFormatter.ofPattern("hh:mm a").format(uiState.endTime)
-        }
-    }
+
+    val formattedStartTime = DateTimeFormatter.ofPattern("hh:mm a").format(uiState.startTime)
+
+
+    val formattedEndTime = DateTimeFormatter.ofPattern("hh:mm a").format(uiState.endTime)
+
 
     val defaultStartTime = "7:00 AM"
     val defaultEndTime = "12:00 PM"
@@ -310,15 +286,11 @@ fun dataAndTimePickerComponent(
             ) {
                 Text(
                     text = formattedStartDate,
-                    modifier = if (isCheckAllDay) {
-                        Modifier
-                    } else {
-                        Modifier.clickable {
-                            startDateDialogState.show()
-                        }
+                    modifier = Modifier.clickable {
+                        startDateDialogState.show()
                     },
                     fontSize = 17.sp,
-                    color = if (isCheckAllDay) Color.LightGray else Color.Black
+                    color = Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
@@ -335,15 +307,12 @@ fun dataAndTimePickerComponent(
             Row {
                 Text(
                     text = formattedEndDate,
-                    modifier = if (isCheckAllDay) {
-                        Modifier
-                    } else {
-                        Modifier.clickable {
-                            endDateDialogState.show()
-                        }
+                    modifier = Modifier.clickable {
+                        endDateDialogState.show()
+
                     },
                     fontSize = 17.sp,
-                    color = if (isCheckAllDay) Color.LightGray else Color.Black
+                    color = Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
@@ -517,7 +486,7 @@ fun pickColorComponent(uiState: EventUiState, viewModel: EventViewModel) {
 
         if (showDialog) {
             ColorPickerDialog(
-                onColorSelected = {  pairColor, index ->
+                onColorSelected = { pairColor, index ->
                     viewModel.onColorChange(index)
                     showDialog = false
                 },
@@ -565,6 +534,7 @@ fun descriptionComponent(uiState: EventUiState, viewModel: EventViewModel) {
 
     var isPlaceholderVisible by remember { mutableStateOf(true) }
     val placeholderText = "Add description content"
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -586,7 +556,7 @@ fun descriptionComponent(uiState: EventUiState, viewModel: EventViewModel) {
             textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
             modifier = Modifier
                 .weight(1f)
-                .padding(12.dp),
+                .padding(12.dp)
         ) {
             if (isPlaceholderVisible) {
                 Text(

@@ -118,7 +118,7 @@ class EventRepository{
         val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant()
         try {
             snapshotStateListener = eventsRef
-                .orderBy("timestamp")
+                .orderBy("startDay")
                 .whereEqualTo("userId", userId)
                 .whereEqualTo("startDay", Timestamp(startOfDay))
                 .addSnapshotListener{ snapshot, e ->
@@ -143,17 +143,24 @@ class EventRepository{
 
 
     fun loadEventBySearch(userId: String, queryValue: String): Flow<Resource<List<Event>>> = callbackFlow {
-        var snapshotStateListener: ListenerRegistration? = null
+        var titleSnapshotStateListener: ListenerRegistration? = null
 
         try {
-            snapshotStateListener = eventsRef
-                .orderBy("timestamp")
+            titleSnapshotStateListener = eventsRef
                 .whereEqualTo("userId", userId)
-                .whereEqualTo("title", queryValue)
-                .whereEqualTo("description", queryValue)
+////                .whereGreaterThanOrEqualTo("title", queryValue)
+//                .whereLessThanOrEqualTo("title", queryValue + "\uf8ff")
+                .orderBy("startDay")
                 .addSnapshotListener{ snapshot, e ->
                     val response = if (snapshot != null) {
-                        val events = snapshot.toObjects(Event::class.java)
+                        val events = snapshot.documents
+                            .filter { document ->
+                                val title = document.getString("title")?.toLowerCase()
+                                title?.contains(queryValue.toLowerCase())?: false
+                            }
+                            .mapNotNull { document ->
+                                document.toObject(Event::class.java)
+                            }
                         Resource.Success(data = events)
                     } else {
                         Resource.Error(throwable = e?.cause)
@@ -166,7 +173,7 @@ class EventRepository{
         }
         /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
         awaitClose {
-            snapshotStateListener?.remove()
+            titleSnapshotStateListener?.remove()
         }
     }
 }

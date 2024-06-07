@@ -31,10 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
-import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
-import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
-import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
-import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
+import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 import com.google.firebase.Timestamp
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -42,7 +39,7 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun SearchResult(event: Event, onEventClick: () -> Unit) {
-    val taskColor = listOf(GreenColor, RedColor, DefaultColor, YellowColor).random()
+    val taskColor = ColorUtil.colors[event.colorIndex].colorValue
 
     val dateString = formatDateToString(event.startDay)
     var month = ""
