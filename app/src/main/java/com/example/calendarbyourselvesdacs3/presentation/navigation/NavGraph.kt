@@ -32,7 +32,11 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("StateFlowValueCalledInComposition", "ComposableDestinationInComposeScope")
 @Composable
-fun NavGraph(signInViewModel: SignInViewModel, eventViewModel: EventViewModel, context: Context) {
+fun NavGraph(
+    signInViewModel: SignInViewModel,
+    eventViewModel: EventViewModel,
+    context: Context
+) {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
     val googleAuthUiClient by lazy {
@@ -44,7 +48,7 @@ fun NavGraph(signInViewModel: SignInViewModel, eventViewModel: EventViewModel, c
 
     NavHost(
         navController = navController,
-        startDestination =  Screen.InteractWithTaskScreen.name
+        startDestination = Screen.SearchScreen.name
     ) {
         composable(Screen.SignInScreen.name) {
 
@@ -182,7 +186,11 @@ fun NavGraph(signInViewModel: SignInViewModel, eventViewModel: EventViewModel, c
         }
 
         composable(route = Screen.InteractWithTaskScreen.name) {
-            InteractWithTaskScreen(onBack = { navController.popBackStack() }, eventId = "")
+            InteractWithTaskScreen(
+                onBack = { navController.popBackStack() },
+                eventId = "",
+                viewModel = eventViewModel
+            )
         }
 
         composable(route = Screen.ListEventScreen.name) {

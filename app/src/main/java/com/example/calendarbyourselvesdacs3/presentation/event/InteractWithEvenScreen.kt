@@ -52,6 +52,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.domain.model.event.PairColor
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
@@ -69,7 +70,7 @@ import java.time.format.DateTimeFormatter
 fun InteractWithTaskScreen(
     onBack: () -> Unit,
     eventId: String,
-    viewModel: EventViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: EventViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val isEventIdNotBlank = eventId.isNotBlank()

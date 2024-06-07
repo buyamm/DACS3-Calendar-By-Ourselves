@@ -1,17 +1,15 @@
 package com.example.calendarbyourselvesdacs3.presentation.event
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
-import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUiClient
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
-import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -23,13 +21,12 @@ import javax.inject.Inject
 @HiltViewModel
 class EventViewModel @Inject constructor (
     private val repository: EventRepository ,
-    private val signInRepository: GoogleAuthUiClient
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EventUiState())
     val uiState = _uiState.asStateFlow()
 
 
-    val user: UserData? = signInRepository.getSignedInUser()
+    private val user: FirebaseUser? = repository.user()
 
     fun onTitleChange(title: String) {
         _uiState.update {
@@ -90,7 +87,7 @@ class EventViewModel @Inject constructor (
         val endDay = handleDateTimeToTimeStamp(_uiState.value.endDate, _uiState.value.endTime)
 
         var event = Event(
-            userId = user?.userId,
+            userId = user?.uid,
             title = _uiState.value.title,
             description = _uiState.value.description,
             isCheckAllDay = _uiState.value.isCheckAllDay,
@@ -107,6 +104,7 @@ class EventViewModel @Inject constructor (
         }
     }
 
+    @SuppressLint("SuspiciousIndentation")
     fun updateEvent(eventId: String) {
         val startDay = handleDateTimeToTimeStamp(_uiState.value.startDate, _uiState.value.startTime)
         val endDay = handleDateTimeToTimeStamp(_uiState.value.endDate, _uiState.value.endTime)
@@ -122,24 +120,22 @@ class EventViewModel @Inject constructor (
             colorIndex = _uiState.value.colorIndex
         )
 
-        viewModelScope.launch {
             repository.updateEvent(event) { completed ->
                 _uiState.update {
                     it.copy(eventUpdatedStatus = completed)
                 }
             }
-        }
+
     }
 
 
     fun getEvent(eventId: String) {
-        viewModelScope.launch {
             repository.getEvent(eventId = eventId, onError = {}) { event ->
                 if (event != null) {
                     setEditField(event)
                 }
             }
-        }
+
     }
 
 
@@ -195,10 +191,10 @@ class EventViewModel @Inject constructor (
                 colorIndex = event.colorIndex,
                 isCheckAllDay = event.isCheckAllDay,
                 isCheckNotification = event.isCheckNotification,
-                startDate = startDate,
-                endDate = endDate,
-                startTime = startTime,
-                endTime = endTime
+                startDate = startDate!!,
+                endDate = endDate!!,
+                startTime = startTime!!,
+                endTime = endTime!!
             )
         }
     }
