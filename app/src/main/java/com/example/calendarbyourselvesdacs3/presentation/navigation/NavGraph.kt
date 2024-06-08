@@ -17,17 +17,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUiClient
-import com.example.calendarbyourselvesdacs3.presentation.calendar.day.DayEventsScreen
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.CalendarMonthScreen
 import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
 import com.example.calendarbyourselvesdacs3.presentation.event.InteractWithTaskScreen
-import com.example.calendarbyourselvesdacs3.presentation.event.ListEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.events.create.CreateEventScreen
+import com.example.calendarbyourselvesdacs3.presentation.home.ListEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.search.SearchScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 
 @SuppressLint("StateFlowValueCalledInComposition", "ComposableDestinationInComposeScope")
@@ -48,7 +48,7 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.InteractWithTaskScreen.name
+        startDestination = Screen.ListEventScreen.name
     ) {
         composable(Screen.SignInScreen.name) {
 
@@ -153,19 +153,19 @@ fun NavGraph(
         }
 
         // Hiển thị danh sách sự kiện
-        composable(
-            route = "calendar/day?date={date}",
-            arguments = listOf(navArgument(name = "date") {}),
-        ) {
-            DayEventsScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
-                onNavigateCreateEvent = { date ->
-                    navController.navigate("events/create?date=${date.navArg()}")
-                },
-            )
-        }
+//        composable(
+//            route = "calendar/day?date={date}",
+//            arguments = listOf(navArgument(name = "date") {}),
+//        ) {
+//            DayEventsScreen(
+//                onNavigateBack = {
+//                    navController.popBackStack()
+//                },
+//                onNavigateCreateEvent = { date ->
+//                    navController.navigate("events/create?date=${date.navArg()}")
+//                },
+//            )
+//        }
 
         //tạo sự kiện
         composable(
@@ -194,10 +194,13 @@ fun NavGraph(
         }
 
         composable(route = Screen.ListEventScreen.name) {
+            val date = LocalDate.parse("2024-06-18") // kiểu LocalDate
+            println("te: $date")
             googleAuthUiClient.getSignedInUser()
                 ?.let { it1 ->
                     ListEventScreen(
                         userData = it1,
+                        date = date,
                         onEventClick = { navController.navigate(Screen.InteractWithTaskScreen.name) },
                         onBack = { navController.popBackStack() }
                     )

@@ -35,7 +35,7 @@ fun ProfileHeaderComponent(
             model = photoUrl,
             contentDescription = null,
             modifier = Modifier
-                .size(50.dp)
+                .size(30.dp)
                 .clip(CircleShape),
             contentScale = ContentScale.Crop
         )

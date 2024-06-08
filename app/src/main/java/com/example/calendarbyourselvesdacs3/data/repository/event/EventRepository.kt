@@ -3,7 +3,6 @@ package com.example.calendarbyourselvesdacs3.data.repository.event
 import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
@@ -12,7 +11,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import java.time.LocalDate
-import java.time.ZoneId
 
 
 const val EVENTS_COLLECTION_REF = "events"
@@ -115,12 +113,12 @@ class EventRepository{
 
     fun loadEventByDate(userId: String, date: LocalDate): Flow<Resource<List<Event>>> = callbackFlow {
         var snapshotStateListener: ListenerRegistration? = null
-        val startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant()
+
         try {
             snapshotStateListener = eventsRef
                 .orderBy("startDay")
                 .whereEqualTo("userId", userId)
-                .whereEqualTo("startDay", Timestamp(startOfDay))
+                .whereEqualTo("startDate", date.toString())
                 .addSnapshotListener{ snapshot, e ->
                     val response = if (snapshot != null) {
                         val events = snapshot.toObjects(Event::class.java)

@@ -30,16 +30,30 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
-import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
-import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
-import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
-import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
-import com.example.listeventui.data.Task
+import com.example.calendarbyourselvesdacs3.domain.model.event.Event
+import com.example.calendarbyourselvesdacs3.presentation.search.formatTimeToString
+import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 
 
 @Composable
-fun EventComponent(task: Task, onEventClick: () -> Unit) {
-    val taskColor = listOf(GreenColor, RedColor, DefaultColor, YellowColor).random()
+fun EventComponent(event: Event, onEventClick: (eventId: String) -> Unit) {
+    val taskColor = ColorUtil.colors[event.colorIndex].colorValue
+
+    val startTimeString = formatTimeToString(event.startDay)
+    val endTimeString = formatTimeToString(event.endDay)
+
+    var hourAndMinute = ""
+    var hourFormat = ""
+
+
+    splitTimeForLeftLine(startTimeString).forEachIndexed { index, s ->
+        when(index){
+            0 -> hourAndMinute = s
+            1 -> hourFormat = s
+        }
+    }
+
+    val startTimeText = if(event.isCheckAllDay) "All\nday" else "$hourAndMinute\n$hourFormat"
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -48,7 +62,7 @@ fun EventComponent(task: Task, onEventClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${task.startTime}\nAM",
+                text = "$startTimeText",
                 fontFamily = FontFamily(Font(R.font.nunito_bold)),
                 textAlign = TextAlign.Center
             )
@@ -67,7 +81,7 @@ fun EventComponent(task: Task, onEventClick: () -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onEventClick() },
+                        .clickable { onEventClick(event.documentId) },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
@@ -79,7 +93,7 @@ fun EventComponent(task: Task, onEventClick: () -> Unit) {
                     )
                     {
                         Text(
-                            text = task.title,
+                            text = event.title,
                             fontFamily = FontFamily(Font(R.font.nunito_bold)),
                             modifier = Modifier.padding(
                                 start = 12.dp,
@@ -89,9 +103,9 @@ fun EventComponent(task: Task, onEventClick: () -> Unit) {
                             fontSize = 20.sp
                         )
 
-                        if (task.description != null) {
+                        if (event.description != null) {
                             Text(
-                                text = task.description,
+                                text = event.description,
                                 fontFamily = FontFamily(Font(R.font.nunito_bold)),
                                 modifier = Modifier.padding(start = 12.dp),
                                 color = Color.White
@@ -99,7 +113,7 @@ fun EventComponent(task: Task, onEventClick: () -> Unit) {
                         }
 
                         Text(
-                            text = "${task.startTime} - ${task.endTime}",
+                            text = "$startTimeString - $endTimeString",
                             fontFamily = FontFamily(Font(R.font.nunito_bold)),
                             modifier = Modifier.padding(
                                 start = 12.dp,
@@ -120,4 +134,8 @@ fun EventComponent(task: Task, onEventClick: () -> Unit) {
         }
         Spacer(modifier = Modifier.height(16.dp))
     }
+}
+
+fun splitTimeForLeftLine(time: String): List<String>{
+    return time.split(" ")
 }
