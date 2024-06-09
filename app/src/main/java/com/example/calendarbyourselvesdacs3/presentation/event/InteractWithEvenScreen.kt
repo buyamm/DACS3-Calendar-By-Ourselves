@@ -40,6 +40,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,10 +71,19 @@ import java.time.format.DateTimeFormatter
 fun InteractWithTaskScreen(
     onBack: () -> Unit,
     eventId: String,
+    date: LocalDate,
     viewModel: EventViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val isEventIdNotBlank = eventId.isNotBlank()
+
+    LaunchedEffect(Unit) {
+        if (isEventIdNotBlank){
+            viewModel.getEvent(eventId = eventId)
+        }else{
+            viewModel.resetState()
+        }
+    }
 
     Scaffold(
 //        modifier = Modifier.nestedScroll(TopAppBarDefaults.enterAlwaysScrollBehavior().nestedScrollConnection),
@@ -98,8 +108,10 @@ fun InteractWithTaskScreen(
                             .clickable {
                                 if (isEventIdNotBlank) {
                                     viewModel.updateEvent(eventId)
+                                    viewModel.resetState()
                                 } else {
                                     viewModel.addEvent()
+                                    viewModel.resetState()
                                 }
                             }
                             .background(Color.Transparent),
@@ -128,7 +140,7 @@ fun InteractWithTaskScreen(
                 Spacer(modifier = Modifier.height(30.dp))
             }
             item {
-                checkAllDayComponent(uiState, viewModel)
+                checkAllDayComponent(uiState, date, viewModel)
             }
 
             item {
@@ -188,7 +200,7 @@ fun EditFieldTitleComponent(uiState: EventUiState, viewModel: EventViewModel) {
 
 @Composable
 
-fun checkAllDayComponent(uiState: EventUiState, viewModel: EventViewModel) {
+fun checkAllDayComponent(uiState: EventUiState, date: LocalDate, viewModel: EventViewModel) {
 
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Icon(
@@ -219,7 +231,7 @@ fun checkAllDayComponent(uiState: EventUiState, viewModel: EventViewModel) {
         }
     }
     Spacer(modifier = Modifier.height(20.dp))
-    dataAndTimePickerComponent(uiState.isCheckAllDay, uiState, viewModel)
+    dataAndTimePickerComponent(uiState.isCheckAllDay, date, uiState, viewModel)
     Spacer(modifier = Modifier.height(30.dp))
     Divider(
         modifier = Modifier
@@ -232,9 +244,11 @@ fun checkAllDayComponent(uiState: EventUiState, viewModel: EventViewModel) {
 @Composable
 fun dataAndTimePickerComponent(
     isCheckAllDay: Boolean,
+    date: LocalDate,
     uiState: EventUiState,
     viewModel: EventViewModel
 ) {
+    if(date != null) viewModel.onStartDateChange(date)
     val context = LocalContext.current
 //    var pickedStartData by remember {
 //        mutableStateOf(LocalDate.now())
@@ -252,7 +266,7 @@ fun dataAndTimePickerComponent(
 
     val formattedStartDate = DateTimeFormatter
         .ofPattern("E, MMM dd yyyy")
-        .format(uiState.startDate)
+        .format(date)
 
 
     val formattedEndDate = DateTimeFormatter

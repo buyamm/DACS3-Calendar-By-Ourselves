@@ -185,10 +185,14 @@ fun NavGraph(
                 onEventClick = { navController.navigate(Screen.ListEventScreen.name) })
         }
 
-        composable(route = Screen.InteractWithTaskScreen.name) {
+        composable(
+            route = Screen.InteractWithTaskScreen.name + "?eventId",
+            arguments= listOf(navArgument("date"){})
+            ) {
             InteractWithTaskScreen(
                 onBack = { navController.popBackStack() },
                 eventId = "",
+                date = it.arguments?.getString("date")?.localDateArg() ?: null !!,
                 viewModel = eventViewModel
             )
         }
@@ -201,7 +205,9 @@ fun NavGraph(
                     ListEventScreen(
                         userData = it1,
                         date = date,
-                        onEventClick = { navController.navigate(Screen.InteractWithTaskScreen.name) },
+                        onEventClick = { eventId ->
+                            navController.navigate(Screen.InteractWithTaskScreen.name)
+                        },
                         onBack = { navController.popBackStack() }
                     )
                 }

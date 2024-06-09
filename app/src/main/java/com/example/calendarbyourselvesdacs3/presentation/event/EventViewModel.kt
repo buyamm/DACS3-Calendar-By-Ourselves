@@ -82,6 +82,12 @@ class EventViewModel @Inject constructor (
         }
     }
 
+    fun resetState(){
+        _uiState.update {
+            EventUiState()
+        }
+    }
+
     fun addEvent() {
         val startDay = handleDateTimeToTimeStamp(_uiState.value.startDate, _uiState.value.startTime)
         val endDay = handleDateTimeToTimeStamp(_uiState.value.endDate, _uiState.value.endTime)
@@ -135,7 +141,6 @@ class EventViewModel @Inject constructor (
                     setEditField(event)
                 }
             }
-
     }
 
 

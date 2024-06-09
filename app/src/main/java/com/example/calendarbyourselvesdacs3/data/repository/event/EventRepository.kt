@@ -2,6 +2,8 @@ package com.example.calendarbyourselvesdacs3.data.repository.event
 
 import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
+import com.example.calendarbyourselvesdacs3.domain.model.event.localDateToString
+import com.example.calendarbyourselvesdacs3.domain.model.event.timestampToString
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
@@ -60,6 +62,7 @@ class EventRepository{
             isCheckAllDay = event.isCheckAllDay,
             isCheckNotification = event.isCheckNotification,
             startDay = event.startDay,
+            startDate = timestampToString(event.startDay),
             endDay = event.endDay,
             colorIndex = event.colorIndex,
             documentId = documentId
@@ -97,6 +100,7 @@ class EventRepository{
             "isCheckAllDay" to event.isCheckAllDay,
             "isCheckNotification" to event.isCheckNotification,
             "startDay" to event.startDay,
+            "startDate" to timestampToString(event.startDay),
             "endDay" to event.endDay,
             "colorIndex" to event.colorIndex
         )
@@ -118,7 +122,7 @@ class EventRepository{
             snapshotStateListener = eventsRef
                 .orderBy("startDay")
                 .whereEqualTo("userId", userId)
-                .whereEqualTo("startDate", date.toString())
+                .whereEqualTo("startDate", localDateToString(date))
                 .addSnapshotListener{ snapshot, e ->
                     val response = if (snapshot != null) {
                         val events = snapshot.toObjects(Event::class.java)

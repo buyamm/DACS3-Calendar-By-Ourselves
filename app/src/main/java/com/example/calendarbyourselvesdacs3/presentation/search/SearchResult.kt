@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
+import com.example.calendarbyourselvesdacs3.domain.model.event.formatDateToString
+import com.example.calendarbyourselvesdacs3.domain.model.event.formatTimeToString
+import com.example.calendarbyourselvesdacs3.domain.model.event.splitFormattedDate
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
-import com.google.firebase.Timestamp
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 
 @Composable
@@ -145,27 +145,7 @@ fun SearchResult(event: Event, onEventClick: () -> Unit) {
     }
 }
 
-fun formatDateToString(timestamp: Timestamp): String{
-    val localDateTime = timestamp.toDate().toInstant()
-        .atZone(ZoneId.systemDefault())
-        .toLocalDateTime()
 
-    val formatter = DateTimeFormatter.ofPattern("MMM dd yyy")
-    return localDateTime.format(formatter)
-}
-
-fun formatTimeToString(timestamp: Timestamp): String{
-    val localDateTime = timestamp.toDate().toInstant()
-        .atZone(ZoneId.systemDefault())
-        .toLocalDateTime()
-
-    val formatter = DateTimeFormatter.ofPattern("hh:mm a")
-    return localDateTime.format(formatter)
-}
-
-fun splitFormattedDate(date: String): List<String>{
-    return date.split(" ")
-}
 
 
 

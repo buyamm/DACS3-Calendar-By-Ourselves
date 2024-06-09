@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.data.Resource
+import com.example.calendarbyourselvesdacs3.domain.model.event.getDayOfWeek
 import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.event.common.EventComponent
 import com.example.listeventui.presentation.component.ProfileHeaderComponent
@@ -108,7 +109,7 @@ fun ListEventScreen(
                     Spacer(modifier = Modifier.height(30.dp))
                 }
 
-                items(uiState.eventList.data ?: emptyList()) {
+                items(uiState.eventList.data ?: emptyList()) {event ->
                     val dismissState = rememberDismissState(
                         initialValue = DismissValue.Default,
                         positionalThreshold = { swipeActivationFloat -> swipeActivationFloat / 2 }
@@ -150,7 +151,8 @@ fun ListEventScreen(
                                                 confirmButton = {
                                                     TextButton(
                                                         onClick = {
-                                                            viewModel.deleteEvent(it.documentId)
+                                                            viewModel.deleteEvent(event.documentId)
+                                                            println("event id: ${event.documentId}")
                                                             scope.launch { dismissState.reset() }
                                                             openDialog = false
                                                         }
@@ -176,7 +178,7 @@ fun ListEventScreen(
                         },
                         dismissContent = {
                             EventComponent(
-                                event = it,
+                                event = event,
                                 onEventClick = { eventId ->
                                     onEventClick(eventId)
                                 }
@@ -185,12 +187,8 @@ fun ListEventScreen(
                     )
                 }
             }
-
-            println("event list: " + uiState.eventList.data)
         }
     }
 }
 
- fun getDayOfWeek(date: LocalDate): String {
-    return date.dayOfWeek.toString()
-}
+

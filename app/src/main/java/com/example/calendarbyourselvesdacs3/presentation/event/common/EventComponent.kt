@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
-import com.example.calendarbyourselvesdacs3.presentation.search.formatTimeToString
+import com.example.calendarbyourselvesdacs3.domain.model.event.formatTimeToString
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 
 

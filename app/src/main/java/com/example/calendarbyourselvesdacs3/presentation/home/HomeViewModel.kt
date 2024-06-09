@@ -35,12 +35,24 @@ class HomeViewModel @Inject constructor (
                 repository.loadEventByDate(
                     userId = user.uid,
                     date = date
-                ).collect{
-                    _uiState.update {homeUiState ->
-                        homeUiState.copy(
-                            eventList = it,
-                            eventQuantity = it.data!!.size,
-                        )
+                ).collect{ result ->
+                    result?.let {
+                        val data = it.data // List<Event>
+                        if(data != null){
+                            _uiState.update {homeUiState ->
+                                homeUiState.copy(
+                                    eventList = it,
+                                    eventQuantity = data.size,
+                                )
+                            }
+                        }else{
+                            _uiState.update {homeUiState ->
+                                homeUiState.copy(
+                                    eventList = it,
+                                    eventQuantity = 0,
+                                )
+                            }
+                        }
                     }
                 }
             }
