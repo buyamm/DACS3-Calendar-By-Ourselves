@@ -12,14 +12,16 @@ import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
 
 @Composable
-fun WelcomMessageComponent(
-    userName: String
+fun WelcomeMessageComponent(
+    userName: String,
+    eventQuantity: Int,
+    dayOfWeek: String
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(text = "Hi $userName!", fontFamily = FontFamily(Font(R.font.nunito_extrabold)), fontSize = 22.sp)
 
-        Text(text = "5 task for Saturday", fontFamily = FontFamily(Font(R.font.nunito_regular)), fontSize = 18.sp, color = Color.Black)
+        Text(text = "$eventQuantity task for $dayOfWeek", fontFamily = FontFamily(Font(R.font.nunito_regular)), fontSize = 18.sp, color = Color.Black)
     }
 }

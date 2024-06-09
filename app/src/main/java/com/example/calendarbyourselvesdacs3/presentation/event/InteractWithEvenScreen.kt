@@ -1,6 +1,8 @@
 package com.example.calendarbyourselvesdacs3.presentation.event
 
+import android.annotation.SuppressLint
 import android.widget.Toast
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,7 +40,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,11 +53,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
-import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
-import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
-import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
-import com.example.listeventui.data.PairColor
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.calendarbyourselvesdacs3.domain.model.event.PairColor
+import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
@@ -64,13 +65,31 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+const val DEFAULT_START_TIME = "07:00 AM"
+const val DEFAULT_END_TIME = "12:00 PM"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-//@Preview
 fun InteractWithTaskScreen(
     onBack: () -> Unit,
-    onSave: () -> Unit
+    onNavigateToHomePage: () -> Unit,
+    eventId: String = "",
+    date: LocalDate? = null,
+    viewModel: EventViewModel = hiltViewModel()
 ) {
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+    val isEventIdNotBlank = eventId.isNotBlank()
+    var isCanSave = true
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        if (isEventIdNotBlank) {
+            viewModel.getEvent(eventId = eventId)
+        } else {
+            viewModel.resetState()
+        }
+    }
+
     Scaffold(
 //        modifier = Modifier.nestedScroll(TopAppBarDefaults.enterAlwaysScrollBehavior().nestedScrollConnection),
         topBar = {
@@ -78,7 +97,10 @@ fun InteractWithTaskScreen(
 //                scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
                 title = { Text(text = "") },
                 navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
+                    IconButton(onClick = {
+                        onBack()
+                        viewModel.resetState()
+                    }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBackIosNew,
                             contentDescription = null,
@@ -88,11 +110,35 @@ fun InteractWithTaskScreen(
                 },
                 actions = {
                     Box(
-                        modifier = Modifier
-                            .requiredHeight(40.dp)
-                            .requiredWidth(80.dp)
-                            .clickable { onSave() }
-                            .background(Color.Transparent),
+                        modifier = if (isCanSave) {
+                            Modifier
+                                .requiredHeight(40.dp)
+                                .requiredWidth(80.dp)
+                                .clickable {
+                                    if (isEventIdNotBlank) {
+                                        viewModel.updateEvent(eventId)
+                                        viewModel.resetState()
+                                        onBack()
+                                    } else {
+                                        viewModel.addEvent()
+                                        viewModel.resetState()
+                                        onNavigateToHomePage()
+                                    }
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            "The operation has been performed successfully!",
+                                            Toast.LENGTH_LONG
+                                        )
+                                        .show()
+                                }
+                                .background(Color.Transparent)
+                        } else {
+                            Modifier
+                                .requiredHeight(40.dp)
+                                .requiredWidth(80.dp)
+                                .background(Color.Transparent)
+                        },
                         contentAlignment = Alignment.Center
 
                     ) {
@@ -100,7 +146,7 @@ fun InteractWithTaskScreen(
                             text = "Save",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF596FB7)
+                            color = if (isCanSave) Color(0xFF596FB7) else Color.LightGray
                         )
                     }
                 },
@@ -114,70 +160,63 @@ fun InteractWithTaskScreen(
                 .padding(it), contentPadding = PaddingValues(all = 16.dp)
         ) {
             item {
-                EditFieldTitleComponent()
+                EditFieldTitleComponent(uiState, viewModel)
                 Spacer(modifier = Modifier.height(30.dp))
             }
             item {
-                checkAllDayComponent()
-                Spacer(modifier = Modifier.height(20.dp))
-            }
-            item {
-                dataAndTimePickerComponent()
-                Spacer(modifier = Modifier.height(30.dp))
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .height(2.dp)
+                checkAllDayComponent(
+                    uiState,
+                    date,
+                    { b ->
+                        isCanSave = b
+                    },
+                    viewModel
                 )
-            }
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                descriptionComponent()
-                Spacer(modifier = Modifier.height(24.dp))
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .height(2.dp)
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                notifcationComponent()
-                Spacer(modifier = Modifier.height(24.dp))
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth(1f)
-                        .height(2.dp)
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-                pickColorComponent()
-                Spacer(modifier = Modifier.height(24.dp))
             }
 
-//            items(count = 50) {
-//                androidx.compose.material3.ListItem(headlineContent = { Text(text = "Item $it") })
-//            }
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                descriptionComponent(uiState, viewModel)
+                Spacer(modifier = Modifier.height(24.dp))
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth(1f)
+                        .height(2.dp)
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                notifcationComponent(uiState, viewModel)
+                Spacer(modifier = Modifier.height(24.dp))
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth(1f)
+                        .height(2.dp)
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                pickColorComponent(uiState, viewModel)
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditFieldTitleComponent() {
-    var str by remember {
-        mutableStateOf("")
-    }
+fun EditFieldTitleComponent(uiState: EventUiState, viewModel: EventViewModel) {
+
     Row(
         modifier = Modifier.fillMaxWidth(),
-//        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Spacer(modifier = Modifier.width(50.dp)) // Tạo khoảng trống bên trái
         TextField(
-            value = str,
-            onValueChange = { str = it },
+            value = uiState.title,
+            onValueChange = {
+                viewModel.onTitleChange(it)
+            },
             placeholder = {
                 Text(text = "Add title", fontSize = 20.sp)
             },
@@ -191,11 +230,14 @@ fun EditFieldTitleComponent() {
 }
 
 @Composable
-//@Preview
-fun checkAllDayComponent() {
-    var isCheckedAllDay by remember {
-        mutableStateOf(false)
-    }
+
+fun checkAllDayComponent(
+    uiState: EventUiState,
+    date: LocalDate?,
+    checkDateValidToSave: (Boolean) -> Unit,
+    viewModel: EventViewModel
+) {
+
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Outlined.WatchLater,
@@ -207,11 +249,13 @@ fun checkAllDayComponent() {
             Text(text = "All-day", fontSize = 18.sp)
             Spacer(modifier = Modifier.weight(1f))
             Switch(
-                checked = isCheckedAllDay,
-                onCheckedChange = { isCheckedAllDay = it },
+                checked = uiState.isCheckAllDay,
+                onCheckedChange = {
+                    viewModel.onCheckAllDayChange(it, DEFAULT_START_TIME, DEFAULT_END_TIME)
+                },
                 thumbContent = {
                     Icon(
-                        imageVector = if (isCheckedAllDay) {
+                        imageVector = if (uiState.isCheckAllDay) {
                             Icons.Default.Check
                         } else {
                             Icons.Default.Close
@@ -222,57 +266,80 @@ fun checkAllDayComponent() {
             )
         }
     }
+    Spacer(modifier = Modifier.height(20.dp))
+    dataAndTimePickerComponent(
+        uiState.isCheckAllDay,
+        date,
+        uiState,
+        checkDateValidToSave,
+        viewModel
+    )
+    Spacer(modifier = Modifier.height(30.dp))
+    Divider(
+        modifier = Modifier
+            .fillMaxWidth(1f)
+            .height(2.dp)
+    )
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
-fun dataAndTimePickerComponent() {
-    val context = LocalContext.current
-    var pickedStartData by remember {
-        mutableStateOf(LocalDate.now())
-    }
-    var pickedEndData by remember {
-        mutableStateOf(LocalDate.now())
-    }
-
-    var pickedStartTime by remember {
-        mutableStateOf(LocalTime.now())
-    }
-    var pickedEndTime by remember {
-        mutableStateOf(LocalTime.now())
+fun dataAndTimePickerComponent(
+    isCheckAllDay: Boolean,
+    date: LocalDate?,
+    uiState: EventUiState,
+    checkDateValidToSave: (Boolean) -> Unit,
+    viewModel: EventViewModel
+) {
+    LaunchedEffect(date) {
+        if (date != null) viewModel.onStartDateChange(startDate = date)
     }
 
-    val formattedStartDate by remember {
-        derivedStateOf {
-            DateTimeFormatter
-                .ofPattern("E, MMM dd yyyy")
-                .format(pickedStartData)
-        }
-    }
 
-    val formattedEndDate by remember {
-        derivedStateOf {
-            DateTimeFormatter
-                .ofPattern("E, MMM dd yyyy")
-                .format(pickedEndData)
-        }
-    }
+    val formattedStartDate = DateTimeFormatter
+        .ofPattern("E, MMM dd yyyy")
+        .format(uiState.startDate)
 
-    val formattedStartTime by remember {
-        derivedStateOf {
-            DateTimeFormatter.ofPattern("hh:mm a").format(pickedStartTime)
-        }
-    }
 
-    val formattedEndTime by remember {
-        derivedStateOf {
-            DateTimeFormatter.ofPattern("hh:mm a").format(pickedEndTime)
-        }
-    }
+    val formattedEndDate = DateTimeFormatter
+        .ofPattern("E, MMM dd yyyy")
+        .format(uiState.endDate)
+
+
+    val formattedStartTime = DateTimeFormatter.ofPattern("hh:mm a").format(uiState.startTime)
+
+
+    val formattedEndTime = DateTimeFormatter.ofPattern("hh:mm a").format(uiState.endTime)
 
     val startDateDialogState = rememberMaterialDialogState()
     val startTimeDialogState = rememberMaterialDialogState()
     val endDateDialogState = rememberMaterialDialogState()
     val endTimeDialogState = rememberMaterialDialogState()
+
+    val startDate = uiState.startDate
+    val startTime = uiState.startTime
+    val endDate = uiState.endDate
+    val endTime = uiState.endTime
+
+    var isEndDateAndTimeInvalid by remember {
+        mutableStateOf(false)
+    }
+
+    var isEndTimeInvalid by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(startDate, endDate, startTime, endTime) {
+        isEndDateAndTimeInvalid = endDate.isBefore(startDate)
+        isEndTimeInvalid = endTime.isBefore(startTime)
+
+        if (isEndDateAndTimeInvalid || isEndTimeInvalid) {
+            checkDateValidToSave(false)
+        } else {
+            checkDateValidToSave(true)
+        }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -286,64 +353,66 @@ fun dataAndTimePickerComponent() {
             ) {
                 Text(
                     text = formattedStartDate,
-                    modifier = Modifier.clickable { startDateDialogState.show() },
-                    fontSize = 17.sp
+                    modifier = Modifier.clickable {
+                        startDateDialogState.show()
+                    },
+                    fontSize = 17.sp,
+                    color = Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = formattedStartTime,
-                    modifier = Modifier.clickable { startTimeDialogState.show() },
-                    fontSize = 17.sp
+                    modifier = if (isCheckAllDay) {
+                        Modifier
+                    } else {
+                        Modifier.clickable { startTimeDialogState.show() }
+                    },
+                    fontSize = 17.sp,
+                    color = if (isCheckAllDay) Color.LightGray else Color.Black
                 )
             }
             Row {
                 Text(
                     text = formattedEndDate,
-                    modifier = Modifier.clickable { endDateDialogState.show() },
-                    fontSize = 17.sp
+                    modifier = Modifier.clickable {
+                        endDateDialogState.show()
+
+                    },
+                    fontSize = 17.sp,
+                    color = if (isEndDateAndTimeInvalid) Color.Red else Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = formattedEndTime,
-                    modifier = Modifier.clickable { endTimeDialogState.show() },
-                    fontSize = 17.sp
+                    modifier = if (isCheckAllDay) {
+                        Modifier
+                    } else {
+                        Modifier.clickable { endTimeDialogState.show() }
+                    },
+                    fontSize = 17.sp,
+                    color = if (isEndDateAndTimeInvalid || isEndTimeInvalid) Color.Red else if (isCheckAllDay) Color.LightGray else Color.Black
                 )
             }
         }
         MaterialDialog(
             dialogState = startDateDialogState,
             buttons = {
-                positiveButton(text = "Ok") {
-                    Toast.makeText(
-                        context,
-                        "Clicked ok",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+                positiveButton(text = "Ok") {}
                 negativeButton(text = "Cancel")
             }
         ) {
             datepicker(
                 initialDate = LocalDate.now(),
                 title = "Pick a date",
-//                allowedDateValidator = {
-//                    it.dayOfMonth % 2 == 1
-//                }
             ) {
-                pickedStartData = it
+                viewModel.onStartDateChange(it)
             }
         }
 
         MaterialDialog(
             dialogState = startTimeDialogState,
             buttons = {
-                positiveButton(text = "Ok") {
-                    Toast.makeText(
-                        context,
-                        "Clicked ok",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+                positiveButton(text = "Ok") {}
                 negativeButton(text = "Cancel")
             }
         ) {
@@ -351,18 +420,19 @@ fun dataAndTimePickerComponent() {
                 initialTime = LocalTime.NOON,
                 title = "Pick a time",
             ) {
-                pickedStartTime = it
+                viewModel.onStartTimeChange(it)
             }
         }
+
         MaterialDialog(
             dialogState = endDateDialogState,
             buttons = {
                 positiveButton(text = "Ok") {
-                    Toast.makeText(
-                        context,
-                        "Clicked ok",
-                        Toast.LENGTH_LONG
-                    ).show()
+//                    Toast.makeText(
+//                        context,
+//                        "Clicked ok",
+//                        Toast.LENGTH_LONG
+//                    ).show()
                 }
                 negativeButton(text = "Cancel")
             }
@@ -370,11 +440,8 @@ fun dataAndTimePickerComponent() {
             datepicker(
                 initialDate = LocalDate.now(),
                 title = "Pick a date",
-//                allowedDateValidator = {
-//                    it.dayOfMonth % 2 == 1
-//                }
             ) {
-                pickedEndData = it
+                viewModel.onEndDateChange(it)
             }
         }
 
@@ -382,11 +449,11 @@ fun dataAndTimePickerComponent() {
             dialogState = endTimeDialogState,
             buttons = {
                 positiveButton(text = "Ok") {
-                    Toast.makeText(
-                        context,
-                        "Clicked ok",
-                        Toast.LENGTH_LONG
-                    ).show()
+//                    Toast.makeText(
+//                        context,
+//                        "Clicked ok",
+//                        Toast.LENGTH_LONG
+//                    ).show()
                 }
                 negativeButton(text = "Cancel")
             }
@@ -395,17 +462,14 @@ fun dataAndTimePickerComponent() {
                 initialTime = LocalTime.NOON,
                 title = "Pick a time",
             ) {
-                pickedEndTime = it
+                viewModel.onEndTimeChange(it)
             }
         }
     }
 }
 
 @Composable
-fun notifcationComponent() {
-    var isCheckedNotif by remember {
-        mutableStateOf(false)
-    }
+fun notifcationComponent(uiState: EventUiState, viewModel: EventViewModel) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Outlined.NotificationsActive,
@@ -417,11 +481,13 @@ fun notifcationComponent() {
             Text(text = "Add a notification", fontSize = 18.sp)
             Spacer(modifier = Modifier.weight(1f))
             Switch(
-                checked = isCheckedNotif,
-                onCheckedChange = { isCheckedNotif = it },
+                checked = uiState.isCheckNotification,
+                onCheckedChange = {
+                    viewModel.onCheckNotiChange(it)
+                },
                 thumbContent = {
                     Icon(
-                        imageVector = if (isCheckedNotif) {
+                        imageVector = if (uiState.isCheckNotification) {
                             Icons.Default.Check
                         } else {
                             Icons.Default.Close
@@ -435,20 +501,28 @@ fun notifcationComponent() {
 }
 
 @Composable
-fun pickColorComponent() {
-    var colorIndex by remember {
-        mutableStateOf(Color.Blue)
-    }
-    var colorName by remember {
-        mutableStateOf("Default color")
-    }
+fun pickColorComponent(uiState: EventUiState, viewModel: EventViewModel) {
+//    var colorIndex by remember {
+//        mutableStateOf(Color.Blue)
+//    }
+//    var colorName by remember {
+//        mutableStateOf("Default color")
+//    }
+
+
+    val selectedColor by animateColorAsState(
+        targetValue = ColorUtil.colors[uiState.colorIndex].colorValue
+    )
+
+    var colorName = ColorUtil.colors[uiState.colorIndex].colorName
+
     var showDialog by remember { mutableStateOf(false) }
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Box(modifier = Modifier.padding(start = 15.dp, end = 15.dp)) {
             Box(
                 modifier = Modifier
                     .size(20.dp)
-                    .background(colorIndex)
+                    .background(selectedColor)
             )
         }
         Text(
@@ -458,9 +532,8 @@ fun pickColorComponent() {
 
         if (showDialog) {
             ColorPickerDialog(
-                onColorSelected = { pairColor ->
-                    colorIndex = pairColor.colorValue
-                    colorName = pairColor.colorName
+                onColorSelected = { pairColor, index ->
+                    viewModel.onColorChange(index)
                     showDialog = false
                 },
                 onDismissRequest = { showDialog = false }
@@ -473,29 +546,24 @@ fun pickColorComponent() {
 
 @Composable
 fun ColorPickerDialog(
-    onColorSelected: (needColor: PairColor) -> Unit,
+    onColorSelected: (needColor: PairColor, index: Int) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    val colors = listOf(
-        PairColor("Red color", RedColor),
-        PairColor("Yellow color", YellowColor),
-        PairColor("Default color", DefaultColor),
-        PairColor("Green color", GreenColor)
-    )
+    val colors = ColorUtil.colors
     AlertDialog(
         onDismissRequest = { onDismissRequest() },
         confirmButton = { },
         title = { Text(text = "Select a Color") },
         text = {
             Column {
-                colors.forEach { color ->
+                colors.forEachIndexed { index, color ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
                             .background(color.colorValue)
                             .clickable {
-                                onColorSelected(PairColor(color.colorName, color.colorValue))
+                                onColorSelected(PairColor(color.colorName, color.colorValue), index)
                             }
                             .padding(4.dp)
                     )
@@ -508,12 +576,11 @@ fun ColorPickerDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //@Preview
-fun descriptionComponent() {
-    var description by remember {
-        mutableStateOf("")
-    }
+fun descriptionComponent(uiState: EventUiState, viewModel: EventViewModel) {
+
     var isPlaceholderVisible by remember { mutableStateOf(true) }
     val placeholderText = "Add description content"
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -526,29 +593,25 @@ fun descriptionComponent() {
             modifier = Modifier.width(50.dp)
         )
 
-        BasicTextField(
-            value = description,
-            onValueChange = {
-                description = it
-                isPlaceholderVisible = it.isEmpty()
-            },
-            textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
-            modifier = Modifier
-                .weight(1f)
-                .padding(12.dp),
-        ) {
-            if (isPlaceholderVisible) {
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            if (uiState.description.isBlank()) {
                 Text(
                     text = placeholderText,
-                    color = Color.Gray
-                )
-            } else {
-                Text(
-                    text = description,
-                    color = Color.Black,
-                    fontSize = 20.sp
+                    fontSize = 20.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.align(Alignment.CenterStart)
                 )
             }
+            BasicTextField(
+                value = uiState.description,
+                onValueChange = {
+                    viewModel.onDescChange(it)
+                },
+                textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
+                modifier = Modifier
+                    .fillMaxSize(1f),
+            )
         }
     }
 }

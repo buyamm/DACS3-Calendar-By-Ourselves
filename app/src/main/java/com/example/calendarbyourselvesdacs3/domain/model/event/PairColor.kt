@@ -1,4 +1,4 @@
-package com.example.listeventui.data
+package com.example.calendarbyourselvesdacs3.domain.model.event
 
 import androidx.compose.ui.graphics.Color
 

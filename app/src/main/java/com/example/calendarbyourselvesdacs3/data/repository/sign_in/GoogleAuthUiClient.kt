@@ -15,11 +15,6 @@ import com.google.firebase.auth.auth
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.CancellationException
 
-/**
- * Luồng hoạt động
- *
- * 1. suspend fun signIn(): IntentSender?
- * */
 
 class GoogleAuthUiClient(
     private val context: Context,

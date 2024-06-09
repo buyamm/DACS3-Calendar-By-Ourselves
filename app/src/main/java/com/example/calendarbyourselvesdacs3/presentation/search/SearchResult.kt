@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.event
+package com.example.calendarbyourselvesdacs3.presentation.search
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -30,15 +30,33 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
-import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
-import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
-import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
-import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
-import com.example.listeventui.data.Task
+import com.example.calendarbyourselvesdacs3.domain.model.event.Event
+import com.example.calendarbyourselvesdacs3.domain.model.event.formatDateToString
+import com.example.calendarbyourselvesdacs3.domain.model.event.formatTimeToString
+import com.example.calendarbyourselvesdacs3.domain.model.event.splitFormattedDate
+import com.example.calendarbyourselvesdacs3.utils.ColorUtil
+
 
 @Composable
-fun EventWithDateComponent(task: Task, onEventClick: () -> Unit) {
-    val taskColor = listOf(GreenColor, RedColor, DefaultColor, YellowColor).random()
+fun SearchResult(event: Event, onEventClick: (eventId: String) -> Unit) {
+    val taskColor = ColorUtil.colors[event.colorIndex].colorValue
+
+    val dateString = formatDateToString(event.startDay)
+    var month = ""
+    var day = ""
+    var year = ""
+
+    splitFormattedDate(dateString).forEachIndexed { index, s ->
+        when(index){
+            0 -> month = s
+            1 -> day = s
+            2 -> year = s
+        }
+    }
+
+    val startTimeString = formatTimeToString(event.startDay)
+    val endTimeString = formatTimeToString(event.endDay)
+
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -48,19 +66,19 @@ fun EventWithDateComponent(task: Task, onEventClick: () -> Unit) {
         ) {
             Column {
                 Text(
-                    text = "Aug",
+                    text = month,
                     fontFamily = FontFamily(Font(R.font.nunito_bold)),
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp
                 )
                 Text(
-                    text = "13",
+                    text = day,
                     fontFamily = FontFamily(Font(R.font.nunito_bold)),
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp
                 )
                 Text(
-                    text = "2024",
+                    text = year,
                     fontFamily = FontFamily(Font(R.font.nunito_bold)),
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp
@@ -81,7 +99,7 @@ fun EventWithDateComponent(task: Task, onEventClick: () -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onEventClick() },
+                        .clickable { onEventClick(event.documentId) },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
@@ -93,7 +111,7 @@ fun EventWithDateComponent(task: Task, onEventClick: () -> Unit) {
                     )
                     {
                         Text(
-                            text = task.title,
+                            text = event.title,
                             fontFamily = FontFamily(Font(R.font.nunito_bold)),
                             modifier = Modifier.padding(
                                 start = 8.dp,
@@ -104,7 +122,7 @@ fun EventWithDateComponent(task: Task, onEventClick: () -> Unit) {
                         )
 
                         Text(
-                            text = "${task.startTime} - ${task.endTime}",
+                            text = "$startTimeString - $endTimeString",
                             fontFamily = FontFamily(Font(R.font.nunito_bold)),
                             modifier = Modifier.padding(
                                 start = 8.dp,
@@ -126,3 +144,14 @@ fun EventWithDateComponent(task: Task, onEventClick: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
+
+
+
+
+
+
+
+
+
+

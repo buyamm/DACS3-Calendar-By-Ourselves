@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.event
+package com.example.calendarbyourselvesdacs3.presentation.event.common
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -30,18 +30,38 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
+import com.example.calendarbyourselvesdacs3.domain.model.event.Event
+import com.example.calendarbyourselvesdacs3.domain.model.event.formatTimeToString
+
 import com.example.calendarbyourselvesdacs3.ui.theme.AppColors
 import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
 import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
 import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
-import com.example.listeventui.data.Task
+import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 
 @Composable
-fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
-    val taskColor = listOf(GreenColor, RedColor, DefaultColor, YellowColor).random()
+fun EventWithoutDescriptionComponent(event: Event, onEventClick: (eventId: String) -> Unit) {
+    val taskColor = ColorUtil.colors[event.colorIndex].colorValue
     val appColors = LocalAppColors.current
+
+    val startTimeString = formatTimeToString(event.startDay)
+    val endTimeString = formatTimeToString(event.endDay)
+
+    var hourAndMinute = ""
+    var hourFormat = ""
+
+
+    splitTimeForLeftLine(startTimeString).forEachIndexed { index, s ->
+        when(index){
+            0 -> hourAndMinute = s
+            1 -> hourFormat = s
+        }
+    }
+
+    val startTimeText = if(event.checkAllDay) "All\nday" else "$hourAndMinute\n$hourFormat"
+
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -50,7 +70,7 @@ fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${task.startTime}\nAM",
+                text = "$startTimeText",
                 fontFamily = FontFamily(Font(R.font.nunito_bold)),
                 textAlign = TextAlign.Center
             )
@@ -68,7 +88,7 @@ fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onEventClick() },
+                        .clickable { onEventClick(event.documentId) },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
@@ -80,7 +100,7 @@ fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
                     )
                     {
                         Text(
-                            text = task.title,
+                            text = event.title,
                             fontFamily = FontFamily(Font(R.font.nunito_bold)),
                             modifier = Modifier.padding(
                                 start = 8.dp,
@@ -91,7 +111,7 @@ fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {
                         )
 
                         Text(
-                            text = "${task.startTime} - ${task.endTime}",
+                            text = "$startTimeString - $endTimeString",
                             fontFamily = FontFamily(Font(R.font.nunito_bold)),
                             modifier = Modifier.padding(
                                 start = 8.dp,

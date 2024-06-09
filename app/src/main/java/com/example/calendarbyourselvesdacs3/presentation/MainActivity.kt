@@ -12,18 +12,18 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.rememberNavController
-import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
+import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
 import com.example.calendarbyourselvesdacs3.presentation.navigation.NavGraph
+import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.CalendarByOurselvesDACS3Theme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
- private val viewModel by viewModels<SignInViewModel>()
+    private val signInViewModel by viewModels<SignInViewModel>()
+    private val eventViewModel  by viewModels<EventViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
                     //==============CALENDAR===============
 
 //                    val viewModel = viewModel<MainViewModel>()
-                    NavGraph(viewModel = viewModel, context = applicationContext)
+                    NavGraph(signInViewModel = signInViewModel, eventViewModel = eventViewModel, context = applicationContext)
 
 
 
