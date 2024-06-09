@@ -21,7 +21,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.calendarbyourselvesdacs3.domain.model.sign_in.SignInState
 
 @Composable
 fun SignInScreen(
