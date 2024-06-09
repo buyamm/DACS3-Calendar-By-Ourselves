@@ -55,22 +55,22 @@ class EventRepository{
     fun addEvent(event: Event, onComplete: (Boolean) -> Unit) {
         val documentId = eventsRef.document().id
 
-        var event = Event(
+        var newEvent = Event(
             userId = event.userId,
             title = event.title,
             description = event.description,
-            isCheckAllDay = event.isCheckAllDay,
-            isCheckNotification = event.isCheckNotification,
+            checkAllDay = event.checkAllDay,
+            checkNotification = event.checkNotification,
             startDay = event.startDay,
             startDate = timestampToString(event.startDay),
             endDay = event.endDay,
             colorIndex = event.colorIndex,
-            documentId = documentId
+            documentId = documentId,
         )
 
         eventsRef
             .document(documentId)
-            .set(event)
+            .set(newEvent)
             .addOnCompleteListener {
                 onComplete.invoke(it.isSuccessful)
             }
@@ -97,8 +97,8 @@ class EventRepository{
         val updateData = hashMapOf<String, Any>(
             "title" to event.title,
             "description" to event.description,
-            "isCheckAllDay" to event.isCheckAllDay,
-            "isCheckNotification" to event.isCheckNotification,
+            "checkAllDay" to event.checkAllDay,
+            "checkNotification" to event.checkNotification,
             "startDay" to event.startDay,
             "startDate" to timestampToString(event.startDay),
             "endDay" to event.endDay,

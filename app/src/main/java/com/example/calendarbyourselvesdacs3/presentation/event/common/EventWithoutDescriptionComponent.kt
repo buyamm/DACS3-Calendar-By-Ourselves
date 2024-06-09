@@ -30,11 +30,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
+import com.example.calendarbyourselvesdacs3.domain.model.task.Task
 import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
 import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
 import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
 import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
-import com.example.listeventui.data.Task
 
 @Composable
 fun EventWithoutDescriptionComponent(task: Task, onEventClick: () -> Unit) {

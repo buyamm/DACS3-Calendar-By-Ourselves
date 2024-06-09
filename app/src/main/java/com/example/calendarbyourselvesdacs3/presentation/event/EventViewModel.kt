@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
+import com.example.calendarbyourselvesdacs3.domain.model.event.stringToLocalTime
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -70,9 +71,17 @@ class EventViewModel @Inject constructor (
         }
     }
 
-    fun onCheckAllDayChange(isCheckAllDay: Boolean) {
+    fun onCheckAllDayChange(
+        isCheckAllDay: Boolean,
+        defaultStartTime: String,
+        defaultEndTime: String
+    ) {
         _uiState.update {
-            it.copy(isCheckAllDay = isCheckAllDay)
+            it.copy(
+                isCheckAllDay = isCheckAllDay,
+                startTime = if(isCheckAllDay) stringToLocalTime(defaultStartTime) else _uiState.value.startTime,
+                endTime = if(isCheckAllDay) stringToLocalTime(defaultEndTime) else _uiState.value.endTime
+            )
         }
     }
 
@@ -96,8 +105,8 @@ class EventViewModel @Inject constructor (
             userId = user?.uid,
             title = _uiState.value.title,
             description = _uiState.value.description,
-            isCheckAllDay = _uiState.value.isCheckAllDay,
-            isCheckNotification = _uiState.value.isCheckNotification,
+            checkAllDay = _uiState.value.isCheckAllDay,
+            checkNotification = _uiState.value.isCheckNotification,
             startDay = startDay,
             endDay = endDay,
             colorIndex = _uiState.value.colorIndex
@@ -119,8 +128,8 @@ class EventViewModel @Inject constructor (
             documentId = eventId,
             title = _uiState.value.title,
             description = _uiState.value.description,
-            isCheckAllDay = _uiState.value.isCheckAllDay,
-            isCheckNotification = _uiState.value.isCheckNotification,
+            checkAllDay = _uiState.value.isCheckAllDay,
+            checkNotification = _uiState.value.isCheckNotification,
             startDay = startDay,
             endDay = endDay,
             colorIndex = _uiState.value.colorIndex
@@ -188,14 +197,13 @@ class EventViewModel @Inject constructor (
             onDate = { endDate = it },
             onTime = { endTime = it }
         )
-
         _uiState.update {
             it.copy(
                 title = event.title,
                 description = event.description,
                 colorIndex = event.colorIndex,
-                isCheckAllDay = event.isCheckAllDay,
-                isCheckNotification = event.isCheckNotification,
+                isCheckAllDay = event.checkAllDay,
+                isCheckNotification = event.checkNotification,
                 startDate = startDate!!,
                 endDate = endDate!!,
                 startTime = startTime!!,

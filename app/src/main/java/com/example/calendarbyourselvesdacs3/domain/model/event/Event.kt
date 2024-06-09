@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -11,13 +12,14 @@ data class Event(
     val userId: String? = "",
     val title: String = "",
     val description: String = "",
-    val isCheckAllDay: Boolean = false,
-    val isCheckNotification: Boolean = false,
+    val checkAllDay: Boolean = false,
+    val checkNotification: Boolean = false,
     val startDay: Timestamp = Timestamp.now(),
     val startDate: String = timestampToString(startDay),
     val endDay: Timestamp = Timestamp.now(),
     val colorIndex: Int = 0,
-    val documentId: String = ""
+    val documentId: String = "",
+
 )
 
 fun timestampToString(timestamp: Timestamp): String{
@@ -59,4 +61,10 @@ fun getDayOfWeek(date: LocalDate): String {
     val day = date.dayOfWeek.toString().toLowerCase()
 
     return day.replaceFirstChar { it.toUpperCase() }
+}
+
+fun stringToLocalTime(s: String): LocalTime {
+    val formatter = DateTimeFormatter.ofPattern("hh:mm a")
+
+    return LocalTime.parse(s, formatter)
 }

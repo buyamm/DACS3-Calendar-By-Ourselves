@@ -65,22 +65,26 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+const val DEFAULT_START_TIME = "07:00 AM"
+const val DEFAULT_END_TIME = "12:00 PM"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InteractWithTaskScreen(
     onBack: () -> Unit,
-    eventId: String,
-    date: LocalDate,
+    eventId: String = "",
+    date: LocalDate? = null,
     viewModel: EventViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val isEventIdNotBlank = eventId.isNotBlank()
+    var isCanSave = true
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        if (isEventIdNotBlank){
+        if (isEventIdNotBlank) {
             viewModel.getEvent(eventId = eventId)
-        }else{
+        } else {
             viewModel.resetState()
         }
     }
@@ -102,19 +106,33 @@ fun InteractWithTaskScreen(
                 },
                 actions = {
                     Box(
-                        modifier = Modifier
-                            .requiredHeight(40.dp)
-                            .requiredWidth(80.dp)
-                            .clickable {
-                                if (isEventIdNotBlank) {
-                                    viewModel.updateEvent(eventId)
-                                    viewModel.resetState()
-                                } else {
-                                    viewModel.addEvent()
-                                    viewModel.resetState()
+                        modifier = if (isCanSave) {
+                            Modifier
+                                .requiredHeight(40.dp)
+                                .requiredWidth(80.dp)
+                                .clickable {
+                                    if (isEventIdNotBlank) {
+                                        viewModel.updateEvent(eventId)
+                                        viewModel.resetState()
+                                    } else {
+                                        viewModel.addEvent()
+                                        viewModel.resetState()
+                                    }
+                                    Toast
+                                        .makeText(
+                                            context,
+                                            "The operation has been performed successfully!",
+                                            Toast.LENGTH_LONG
+                                        )
+                                        .show()
                                 }
-                            }
-                            .background(Color.Transparent),
+                                .background(Color.Transparent)
+                        } else {
+                            Modifier
+                                .requiredHeight(40.dp)
+                                .requiredWidth(80.dp)
+                                .background(Color.Transparent)
+                        },
                         contentAlignment = Alignment.Center
 
                     ) {
@@ -122,7 +140,7 @@ fun InteractWithTaskScreen(
                             text = "Save",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF596FB7)
+                            color = if (isCanSave) Color(0xFF596FB7) else Color.LightGray
                         )
                     }
                 },
@@ -140,7 +158,14 @@ fun InteractWithTaskScreen(
                 Spacer(modifier = Modifier.height(30.dp))
             }
             item {
-                checkAllDayComponent(uiState, date, viewModel)
+                checkAllDayComponent(
+                    uiState,
+                    date,
+                    { b ->
+                        isCanSave = b
+                    },
+                    viewModel
+                )
             }
 
             item {
@@ -200,7 +225,12 @@ fun EditFieldTitleComponent(uiState: EventUiState, viewModel: EventViewModel) {
 
 @Composable
 
-fun checkAllDayComponent(uiState: EventUiState, date: LocalDate, viewModel: EventViewModel) {
+fun checkAllDayComponent(
+    uiState: EventUiState,
+    date: LocalDate?,
+    checkDateValidToSave: (Boolean) -> Unit,
+    viewModel: EventViewModel
+) {
 
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Icon(
@@ -215,7 +245,7 @@ fun checkAllDayComponent(uiState: EventUiState, date: LocalDate, viewModel: Even
             Switch(
                 checked = uiState.isCheckAllDay,
                 onCheckedChange = {
-                    viewModel.onCheckAllDayChange(it)
+                    viewModel.onCheckAllDayChange(it, DEFAULT_START_TIME, DEFAULT_END_TIME)
                 },
                 thumbContent = {
                     Icon(
@@ -231,7 +261,13 @@ fun checkAllDayComponent(uiState: EventUiState, date: LocalDate, viewModel: Even
         }
     }
     Spacer(modifier = Modifier.height(20.dp))
-    dataAndTimePickerComponent(uiState.isCheckAllDay, date, uiState, viewModel)
+    dataAndTimePickerComponent(
+        uiState.isCheckAllDay,
+        date,
+        uiState,
+        checkDateValidToSave,
+        viewModel
+    )
     Spacer(modifier = Modifier.height(30.dp))
     Divider(
         modifier = Modifier
@@ -244,29 +280,17 @@ fun checkAllDayComponent(uiState: EventUiState, date: LocalDate, viewModel: Even
 @Composable
 fun dataAndTimePickerComponent(
     isCheckAllDay: Boolean,
-    date: LocalDate,
+    date: LocalDate?,
     uiState: EventUiState,
+    checkDateValidToSave: (Boolean) -> Unit,
     viewModel: EventViewModel
 ) {
-    if(date != null) viewModel.onStartDateChange(date)
-    val context = LocalContext.current
-//    var pickedStartData by remember {
-//        mutableStateOf(LocalDate.now())
-//    }
-//    var pickedEndData by remember {
-//        mutableStateOf(LocalDate.now())
-//    }
-//
-//    var pickedStartTime by remember {
-//        mutableStateOf(LocalTime.now())
-//    }
-//    var pickedEndTime by remember {
-//        mutableStateOf(LocalTime.now())
-//    }
+    if (date != null) viewModel.onStartDateChange(startDate = date)
+
 
     val formattedStartDate = DateTimeFormatter
         .ofPattern("E, MMM dd yyyy")
-        .format(date)
+        .format(uiState.startDate)
 
 
     val formattedEndDate = DateTimeFormatter
@@ -279,14 +303,35 @@ fun dataAndTimePickerComponent(
 
     val formattedEndTime = DateTimeFormatter.ofPattern("hh:mm a").format(uiState.endTime)
 
-
-    val defaultStartTime = "7:00 AM"
-    val defaultEndTime = "12:00 PM"
-
     val startDateDialogState = rememberMaterialDialogState()
     val startTimeDialogState = rememberMaterialDialogState()
     val endDateDialogState = rememberMaterialDialogState()
     val endTimeDialogState = rememberMaterialDialogState()
+
+    val startDate = uiState.startDate
+    val startTime = uiState.startTime
+    val endDate = uiState.endDate
+    val endTime = uiState.endTime
+
+    var isEndDateAndTimeInvalid by remember {
+        mutableStateOf(false)
+    }
+
+    var isEndTimeInvalid by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(startDate, endDate, startTime, endTime) {
+        isEndDateAndTimeInvalid = endDate.isBefore(startDate)
+        isEndTimeInvalid = endTime.isBefore(startTime)
+
+        if (isEndDateAndTimeInvalid || isEndTimeInvalid) {
+            checkDateValidToSave(false)
+        } else {
+            checkDateValidToSave(true)
+        }
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -308,7 +353,7 @@ fun dataAndTimePickerComponent(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = if (isCheckAllDay) defaultStartTime else formattedStartTime,
+                    text = formattedStartTime,
                     modifier = if (isCheckAllDay) {
                         Modifier
                     } else {
@@ -326,40 +371,31 @@ fun dataAndTimePickerComponent(
 
                     },
                     fontSize = 17.sp,
-                    color = Color.Black
+                    color = if (isEndDateAndTimeInvalid) Color.Red else Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = if (isCheckAllDay) defaultEndTime else formattedEndTime,
+                    text = formattedEndTime,
                     modifier = if (isCheckAllDay) {
                         Modifier
                     } else {
                         Modifier.clickable { endTimeDialogState.show() }
                     },
                     fontSize = 17.sp,
-                    color = if (isCheckAllDay) Color.LightGray else Color.Black
+                    color = if (isEndDateAndTimeInvalid || isEndTimeInvalid) Color.Red else if (isCheckAllDay) Color.LightGray else Color.Black
                 )
             }
         }
         MaterialDialog(
             dialogState = startDateDialogState,
             buttons = {
-                positiveButton(text = "Ok") {
-                    Toast.makeText(
-                        context,
-                        "Clicked ok",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+                positiveButton(text = "Ok") {}
                 negativeButton(text = "Cancel")
             }
         ) {
             datepicker(
                 initialDate = LocalDate.now(),
                 title = "Pick a date",
-//                allowedDateValidator = {
-//                    it.dayOfMonth % 2 == 1
-//                }
             ) {
                 viewModel.onStartDateChange(it)
             }
@@ -368,13 +404,7 @@ fun dataAndTimePickerComponent(
         MaterialDialog(
             dialogState = startTimeDialogState,
             buttons = {
-                positiveButton(text = "Ok") {
-                    Toast.makeText(
-                        context,
-                        "Clicked ok",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+                positiveButton(text = "Ok") {}
                 negativeButton(text = "Cancel")
             }
         ) {
@@ -382,19 +412,19 @@ fun dataAndTimePickerComponent(
                 initialTime = LocalTime.NOON,
                 title = "Pick a time",
             ) {
-//                pickedStartTime = it
                 viewModel.onStartTimeChange(it)
             }
         }
+
         MaterialDialog(
             dialogState = endDateDialogState,
             buttons = {
                 positiveButton(text = "Ok") {
-                    Toast.makeText(
-                        context,
-                        "Clicked ok",
-                        Toast.LENGTH_LONG
-                    ).show()
+//                    Toast.makeText(
+//                        context,
+//                        "Clicked ok",
+//                        Toast.LENGTH_LONG
+//                    ).show()
                 }
                 negativeButton(text = "Cancel")
             }
@@ -402,11 +432,7 @@ fun dataAndTimePickerComponent(
             datepicker(
                 initialDate = LocalDate.now(),
                 title = "Pick a date",
-//                allowedDateValidator = {
-//                    it.dayOfMonth % 2 == 1
-//                }
             ) {
-//                pickedEndData = it
                 viewModel.onEndDateChange(it)
             }
         }
@@ -415,11 +441,11 @@ fun dataAndTimePickerComponent(
             dialogState = endTimeDialogState,
             buttons = {
                 positiveButton(text = "Ok") {
-                    Toast.makeText(
-                        context,
-                        "Clicked ok",
-                        Toast.LENGTH_LONG
-                    ).show()
+//                    Toast.makeText(
+//                        context,
+//                        "Clicked ok",
+//                        Toast.LENGTH_LONG
+//                    ).show()
                 }
                 negativeButton(text = "Cancel")
             }
@@ -428,7 +454,6 @@ fun dataAndTimePickerComponent(
                 initialTime = LocalTime.NOON,
                 title = "Pick a time",
             ) {
-//                pickedEndTime = it
                 viewModel.onEndTimeChange(it)
             }
         }
@@ -437,7 +462,6 @@ fun dataAndTimePickerComponent(
 
 @Composable
 fun notifcationComponent(uiState: EventUiState, viewModel: EventViewModel) {
-
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Outlined.NotificationsActive,
@@ -561,29 +585,25 @@ fun descriptionComponent(uiState: EventUiState, viewModel: EventViewModel) {
             modifier = Modifier.width(50.dp)
         )
 
-        BasicTextField(
-            value = uiState.description,
-            onValueChange = {
-                viewModel.onDescChange(it)
-                isPlaceholderVisible = it.isEmpty()
-            },
-            textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
-            modifier = Modifier
-                .weight(1f)
-                .padding(12.dp)
-        ) {
-            if (isPlaceholderVisible) {
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            if (uiState.description.isBlank()) {
                 Text(
                     text = placeholderText,
-                    color = Color.Gray
-                )
-            } else {
-                Text(
-                    text = uiState.description,
-                    color = Color.Black,
-                    fontSize = 20.sp
+                    fontSize = 20.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.align(Alignment.CenterStart)
                 )
             }
+            BasicTextField(
+                value = uiState.description,
+                onValueChange = {
+                    viewModel.onDescChange(it)
+                },
+                textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
+                modifier = Modifier
+                    .fillMaxSize(1f),
+            )
         }
     }
 }

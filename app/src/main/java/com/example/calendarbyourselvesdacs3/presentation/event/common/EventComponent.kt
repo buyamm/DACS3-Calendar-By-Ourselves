@@ -53,7 +53,7 @@ fun EventComponent(event: Event, onEventClick: (eventId: String) -> Unit) {
         }
     }
 
-    val startTimeText = if(event.isCheckAllDay) "All\nday" else "$hourAndMinute\n$hourFormat"
+    val startTimeText = if(event.checkAllDay) "All\nday" else "$hourAndMinute\n$hourFormat"
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(

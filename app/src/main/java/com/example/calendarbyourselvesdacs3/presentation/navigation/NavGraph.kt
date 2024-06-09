@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -20,7 +21,6 @@ import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUi
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.CalendarMonthScreen
 import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
 import com.example.calendarbyourselvesdacs3.presentation.event.InteractWithTaskScreen
-import com.example.calendarbyourselvesdacs3.presentation.events.create.CreateEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.home.ListEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.search.SearchScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
@@ -48,7 +48,7 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.ListEventScreen.name
+        startDestination = Screen.InteractWithTaskScreen.name
     ) {
         composable(Screen.SignInScreen.name) {
 
@@ -56,7 +56,7 @@ fun NavGraph(
 
             //Lưu trạng thái khi đăng nhập thành công => hiển thị luôn trang chủ
             LaunchedEffect(key1 = Unit) {
-                if(googleAuthUiClient.getSignedInUser() != null) {
+                if (googleAuthUiClient.getSignedInUser() != null) {
                     navController.navigate("calendar")
                 }
             }
@@ -128,10 +128,10 @@ fun NavGraph(
         composable("calendar") {
             CalendarMonthScreen(
                 onNavigateCreateEvent = { date ->
-                    navController.navigate("events/create?date=${date.navArg()}")
+                    navController.navigate(Screen.InteractWithTaskScreen.name + "/create?date=${date.navArg()}")
                 },
                 onNavigateDay = { date ->
-                    navController.navigate("calendar/day?date=${date.navArg()}")
+                    navController.navigate(Screen.ListEventScreen.name + "/event-list?date=${date.navArg()}")
                 },
                 userData = googleAuthUiClient.getSignedInUser(),
                 onSignOut = {
@@ -168,16 +168,16 @@ fun NavGraph(
 //        }
 
         //tạo sự kiện
-        composable(
-            route = "events/create?date={date}",
-            arguments = listOf(navArgument(name = "date") {}),
-        ) {
-            CreateEventScreen(
-                onNavigateBack = {
-                    navController.popBackStack()
-                },
-            )
-        }
+//        composable(
+//            route = "events/create?date={date}",
+//            arguments = listOf(navArgument(name = "date") {}),
+//        ) {
+//            CreateEventScreen(
+//                onNavigateBack = {
+//                    navController.popBackStack()
+//                },
+//            )
+//        }
 
         composable(route = Screen.SearchScreen.name) {
             SearchScreen(
@@ -185,28 +185,44 @@ fun NavGraph(
                 onEventClick = { navController.navigate(Screen.ListEventScreen.name) })
         }
 
+//        Create event
         composable(
-            route = Screen.InteractWithTaskScreen.name + "?eventId",
-            arguments= listOf(navArgument("date"){})
-            ) {
+            route = Screen.InteractWithTaskScreen.name + "/create?date={date}",
+            arguments = listOf(navArgument("date") {})
+        ) {
             InteractWithTaskScreen(
                 onBack = { navController.popBackStack() },
-                eventId = "",
-                date = it.arguments?.getString("date")?.localDateArg() ?: null !!,
+                date = it.arguments?.getString("date")?.localDateArg(),
                 viewModel = eventViewModel
             )
         }
 
-        composable(route = Screen.ListEventScreen.name) {
-            val date = LocalDate.parse("2024-06-18") // kiểu LocalDate
-            println("te: $date")
+//        Update event
+        composable(
+//            route = Screen.InteractWithTaskScreen.name + "/update?eventId={eventId}",
+            route = Screen.InteractWithTaskScreen.name,
+            arguments = listOf(navArgument("eventId") {
+                type = NavType.StringType
+                defaultValue = ""
+            })
+        ) {
+            InteractWithTaskScreen(
+                onBack = { navController.popBackStack() },
+//                eventId = it.arguments?.getString("eventId") as String,
+                viewModel = eventViewModel
+            )
+        }
+
+//        Event List
+        composable(route = Screen.ListEventScreen.name + "/event-list?date={date}") {
+            val date = LocalDate.parse("2024-06-09") // kiểu LocalDate
             googleAuthUiClient.getSignedInUser()
                 ?.let { it1 ->
                     ListEventScreen(
                         userData = it1,
                         date = date,
                         onEventClick = { eventId ->
-                            navController.navigate(Screen.InteractWithTaskScreen.name)
+                            navController.navigate(Screen.InteractWithTaskScreen.name + "/update?eventId=$eventId")
                         },
                         onBack = { navController.popBackStack() }
                     )

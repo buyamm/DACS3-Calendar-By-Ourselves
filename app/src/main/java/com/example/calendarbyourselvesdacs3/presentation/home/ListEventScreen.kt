@@ -151,8 +151,8 @@ fun ListEventScreen(
                                                 confirmButton = {
                                                     TextButton(
                                                         onClick = {
-                                                            viewModel.deleteEvent(event.documentId)
                                                             println("event id: ${event.documentId}")
+                                                            viewModel.deleteEvent(event.documentId)
                                                             scope.launch { dismissState.reset() }
                                                             openDialog = false
                                                         }

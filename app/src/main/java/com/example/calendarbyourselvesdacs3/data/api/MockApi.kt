@@ -1,6 +1,6 @@
 package com.example.calendarbyourselvesdacs3.data.api
 
-import com.example.listeventui.data.Task
+import com.example.calendarbyourselvesdacs3.domain.model.task.Task
 
 object MockApi {
     val taskList = listOf(
