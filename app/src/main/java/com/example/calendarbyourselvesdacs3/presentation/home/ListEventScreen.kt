@@ -1,5 +1,6 @@
 package com.example.calendarbyourselvesdacs3.presentation.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,12 +14,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -40,11 +46,13 @@ import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.event.getDayOfWeek
 import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.event.common.EventComponent
+import com.example.calendarbyourselvesdacs3.presentation.event.common.mySnackBar
 import com.example.listeventui.presentation.component.ProfileHeaderComponent
 import com.example.listeventui.presentation.component.WelcomeMessageComponent
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListEventScreen(
@@ -52,14 +60,13 @@ fun ListEventScreen(
     date: LocalDate,
     onEventClick: (eventId: String) -> Unit,
     onBack: () -> Unit,
+    onNavigateToInteractEvent: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
 
-
-
-    LaunchedEffect(Unit) {
-        viewModel.loadEventsByDate(date = date)
+    val snackbarHostState = remember {
+        SnackbarHostState()
     }
 
     var openDialog by remember {
@@ -67,7 +74,13 @@ fun ListEventScreen(
     }
     val scope = rememberCoroutineScope()
 
-    when(uiState.eventList){
+
+
+    LaunchedEffect(Unit) {
+        viewModel.loadEventsByDate(date = date)
+    }
+
+    when (uiState.eventList) {
         is Resource.Error -> {
             uiState.eventList.throwable?.message?.let { it1 ->
                 Text(
@@ -86,105 +99,127 @@ fun ListEventScreen(
         }
 
         is Resource.Success -> {
-            LazyColumn(contentPadding = PaddingValues(
-                start = 16.dp,
-                top = 16.dp,
-                bottom = 16.dp,
-                end = 16.dp
-            )) {
-                item {
-                    ProfileHeaderComponent(
-                        photoUrl = userData.profilPictureUrl.toString(),
-                        onBack = onBack
-                    )
+            Scaffold(
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+                floatingActionButton = {
+                    FloatingActionButton(onClick = { onNavigateToInteractEvent() }) {
+                        Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
+                    }
                 }
-
-                item {
-                    Spacer(modifier = Modifier.height(30.dp))
-                    WelcomeMessageComponent(
-                        userName = userData.username.toString(),
-                        eventQuantity = uiState.eventQuantity,
-                        dayOfWeek = getDayOfWeek(date)
+            ) {
+                LazyColumn(
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        top = 16.dp,
+                        bottom = 16.dp,
+                        end = 16.dp
                     )
-                    Spacer(modifier = Modifier.height(30.dp))
-                }
+                ) {
+                    item {
+                        ProfileHeaderComponent(
+                            photoUrl = userData.profilPictureUrl.toString(),
+                            onBack = onBack
+                        )
+                    }
 
-                items(uiState.eventList.data ?: emptyList()) {event ->
-                    val dismissState = rememberDismissState(
-                        initialValue = DismissValue.Default,
-                        positionalThreshold = { swipeActivationFloat -> swipeActivationFloat / 2 }
-                    )
+                    item {
+                        Spacer(modifier = Modifier.height(30.dp))
+                        WelcomeMessageComponent(
+                            userName = userData.username.toString(),
+                            eventQuantity = uiState.eventQuantity,
+                            dayOfWeek = getDayOfWeek(date)
+                        )
+                        Spacer(modifier = Modifier.height(30.dp))
+                    }
 
-                    SwipeToDismiss(
-                        state = dismissState,
-                        background = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row {
-                                    IconButton(onClick = { scope.launch { dismissState.reset() } }) {
-                                        Icon(
-                                            Icons.Default.Refresh,
-                                            contentDescription = "Refresh",
-                                            modifier = Modifier.size(30.dp)
-                                        )
-                                    }
-                                    if (dismissState.targetValue == DismissValue.DismissedToStart){
-                                        IconButton(onClick = { openDialog = true }) {
+                    items(uiState.eventList.data ?: emptyList()) { event ->
+                        val dismissState = rememberDismissState(
+                            initialValue = DismissValue.Default,
+                            positionalThreshold = { swipeActivationFloat -> swipeActivationFloat / 2 }
+                        )
+
+                        SwipeToDismiss(
+                            state = dismissState,
+                            background = {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row {
+                                        IconButton(onClick = { scope.launch { dismissState.reset() } }) {
                                             Icon(
-                                                Icons.Default.Delete,
-                                                contentDescription = "Delete",
+                                                Icons.Default.Refresh,
+                                                contentDescription = "Refresh",
                                                 modifier = Modifier.size(30.dp)
                                             )
                                         }
-                                        if(openDialog){
-                                            AlertDialog(
-                                                icon = { Icon(imageVector = Icons.Default.Delete, contentDescription = null) },
-                                                title = { Text(text = "Delete Event?") },
-                                                text = { Text(text = "If you click \"Confirm\" event will be deleted permanent! Be sure about it") },
-                                                onDismissRequest = {
-                                                    openDialog = false
-                                                    scope.launch { dismissState.reset() }
-                                                },
-                                                confirmButton = {
-                                                    TextButton(
-                                                        onClick = {
-                                                            println("event id: ${event.documentId}")
-                                                            viewModel.deleteEvent(event.documentId)
-                                                            scope.launch { dismissState.reset() }
-                                                            openDialog = false
+                                        if (dismissState.targetValue == DismissValue.DismissedToStart) {
+                                            IconButton(onClick = { openDialog = true }) {
+                                                Icon(
+                                                    Icons.Default.Delete,
+                                                    contentDescription = "Delete",
+                                                    modifier = Modifier.size(30.dp)
+                                                )
+                                            }
+                                            if (openDialog) {
+                                                AlertDialog(
+                                                    icon = {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Delete,
+                                                            contentDescription = null
+                                                        )
+                                                    },
+                                                    title = { Text(text = "Delete Event?") },
+                                                    text = { Text(text = "If you click \"Confirm\" event will be deleted permanent! Be sure about it") },
+                                                    onDismissRequest = {
+                                                        openDialog = false
+                                                        scope.launch { dismissState.reset() }
+                                                    },
+                                                    confirmButton = {
+                                                        TextButton(
+                                                            onClick = {
+                                                                viewModel.deleteEvent(event)
+                                                                scope.launch { dismissState.reset() }
+                                                                openDialog = false
+                                                                mySnackBar(
+                                                                    scope = scope,
+                                                                    snackBarHostState = snackbarHostState,
+                                                                    msg = "Deleted successfully!",
+                                                                    actionLabel = "UNDO",
+                                                                    onAction = { viewModel.undoDeletedEvent() }
+                                                                )
+                                                            }
+                                                        ) {
+                                                            Text("Confirm")
                                                         }
-                                                    ) {
-                                                        Text("Confirm")
-                                                    }
-                                                },
-                                                dismissButton = {
-                                                    TextButton(
-                                                        onClick = {
-                                                            openDialog = false
-                                                            scope.launch { dismissState.reset() }
+                                                    },
+                                                    dismissButton = {
+                                                        TextButton(
+                                                            onClick = {
+                                                                openDialog = false
+                                                                scope.launch { dismissState.reset() }
+                                                            }
+                                                        ) {
+                                                            Text("Dismiss")
                                                         }
-                                                    ) {
-                                                        Text("Dismiss")
                                                     }
-                                                }
-                                            )
+                                                )
+                                            }
                                         }
                                     }
                                 }
+                            },
+                            dismissContent = {
+                                EventComponent(
+                                    event = event,
+                                    onEventClick = { eventId ->
+                                        onEventClick(eventId)
+                                    }
+                                )
                             }
-                        },
-                        dismissContent = {
-                            EventComponent(
-                                event = event,
-                                onEventClick = { eventId ->
-                                    onEventClick(eventId)
-                                }
-                            )
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

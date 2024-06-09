@@ -35,7 +35,7 @@ import com.example.calendarbyourselvesdacs3.data.Resource
 @Composable
 fun SearchScreen(
     onBackClick: () -> Unit,
-    onEventClick: () -> Unit,
+    onEventClick: (eventId: String) -> Unit,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
 
@@ -98,7 +98,6 @@ fun SearchScreen(
 //            }
 
             if(uiState.searchQuery.isNotEmpty()){
-                println("search query is not empty")
                 when(uiState.eventList){
                     is Resource.Error -> {
                         uiState.eventList.throwable?.message?.let { it1 ->
@@ -120,12 +119,11 @@ fun SearchScreen(
                     is Resource.Success -> {
                         LazyColumn(contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
                             items(uiState.eventList.data ?: emptyList()){
-                                SearchResult(event = it) {
-                                    
+                                SearchResult(event = it) {eventId ->
+                                    onEventClick(eventId)
                                 }
                             }
                         }
-                        println("event list: " + uiState.eventList.data)
                     }
                 }
             }

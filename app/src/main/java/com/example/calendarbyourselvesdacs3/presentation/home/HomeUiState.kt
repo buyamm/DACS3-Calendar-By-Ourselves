@@ -7,5 +7,7 @@ data class HomeUiState(
     val eventList: Resource<List<Event>> = Resource.Loading(),
     val eventQuantity: Int = 0,
 
-    val eventDeletedStatus: Boolean = false
+    val deletedEvent: Event? = null,
+    val eventDeletedStatus: Boolean = false,
+    val eventUndoDeletedStatus: Boolean = false
 )

@@ -48,7 +48,7 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.InteractWithTaskScreen.name
+        startDestination = Screen.ListEventScreen.name
     ) {
         composable(Screen.SignInScreen.name) {
 
@@ -133,6 +133,9 @@ fun NavGraph(
                 onNavigateDay = { date ->
                     navController.navigate(Screen.ListEventScreen.name + "/event-list?date=${date.navArg()}")
                 },
+                onNavigateToUpdateEvent = { eventId ->
+                    navController.navigate(Screen.InteractWithTaskScreen.name + "/update?eventId=$eventId")
+                },
                 userData = googleAuthUiClient.getSignedInUser(),
                 onSignOut = {
                     coroutineScope.launch {
@@ -182,16 +185,21 @@ fun NavGraph(
         composable(route = Screen.SearchScreen.name) {
             SearchScreen(
                 onBackClick = { navController.popBackStack() },
-                onEventClick = { navController.navigate(Screen.ListEventScreen.name) })
+                onEventClick = { eventId ->
+                    navController.navigate(Screen.InteractWithTaskScreen.name + "/update?eventId=$eventId")
+                }
+            )
         }
 
 //        Create event
         composable(
+//            route = Screen.InteractWithTaskScreen.name,
             route = Screen.InteractWithTaskScreen.name + "/create?date={date}",
             arguments = listOf(navArgument("date") {})
         ) {
             InteractWithTaskScreen(
                 onBack = { navController.popBackStack() },
+                onNavigateToHomePage = { navController.navigate("calendar") },
                 date = it.arguments?.getString("date")?.localDateArg(),
                 viewModel = eventViewModel
             )
@@ -199,8 +207,8 @@ fun NavGraph(
 
 //        Update event
         composable(
-//            route = Screen.InteractWithTaskScreen.name + "/update?eventId={eventId}",
-            route = Screen.InteractWithTaskScreen.name,
+            route = Screen.InteractWithTaskScreen.name + "/update?eventId={eventId}",
+//            route = Screen.InteractWithTaskScreen.name,
             arguments = listOf(navArgument("eventId") {
                 type = NavType.StringType
                 defaultValue = ""
@@ -208,13 +216,17 @@ fun NavGraph(
         ) {
             InteractWithTaskScreen(
                 onBack = { navController.popBackStack() },
-//                eventId = it.arguments?.getString("eventId") as String,
+                onNavigateToHomePage = { navController.navigate("calendar") },
+                eventId = it.arguments?.getString("eventId") as String,
                 viewModel = eventViewModel
             )
         }
 
 //        Event List
-        composable(route = Screen.ListEventScreen.name + "/event-list?date={date}") {
+        composable(
+//            route = Screen.ListEventScreen.name + "/event-list?date={date}"
+            route = Screen.ListEventScreen.name
+        ) {
             val date = LocalDate.parse("2024-06-09") // kiểu LocalDate
             googleAuthUiClient.getSignedInUser()
                 ?.let { it1 ->
@@ -224,7 +236,10 @@ fun NavGraph(
                         onEventClick = { eventId ->
                             navController.navigate(Screen.InteractWithTaskScreen.name + "/update?eventId=$eventId")
                         },
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStack() },
+                        onNavigateToInteractEvent = {
+                            navController.navigate(route = Screen.InteractWithTaskScreen.name + "/create?date=$date")
+                        }
                     )
                 }
         }

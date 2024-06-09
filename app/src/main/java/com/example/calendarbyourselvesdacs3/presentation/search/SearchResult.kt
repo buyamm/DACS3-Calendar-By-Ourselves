@@ -38,7 +38,7 @@ import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 
 
 @Composable
-fun SearchResult(event: Event, onEventClick: () -> Unit) {
+fun SearchResult(event: Event, onEventClick: (eventId: String) -> Unit) {
     val taskColor = ColorUtil.colors[event.colorIndex].colorValue
 
     val dateString = formatDateToString(event.startDay)
@@ -99,7 +99,7 @@ fun SearchResult(event: Event, onEventClick: () -> Unit) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onEventClick() },
+                        .clickable { onEventClick(event.documentId) },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(

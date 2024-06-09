@@ -72,6 +72,7 @@ const val DEFAULT_END_TIME = "12:00 PM"
 @Composable
 fun InteractWithTaskScreen(
     onBack: () -> Unit,
+    onNavigateToHomePage: () -> Unit,
     eventId: String = "",
     date: LocalDate? = null,
     viewModel: EventViewModel = hiltViewModel()
@@ -96,7 +97,10 @@ fun InteractWithTaskScreen(
 //                scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
                 title = { Text(text = "") },
                 navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
+                    IconButton(onClick = {
+                        onBack()
+                        viewModel.resetState()
+                    }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBackIosNew,
                             contentDescription = null,
@@ -114,9 +118,11 @@ fun InteractWithTaskScreen(
                                     if (isEventIdNotBlank) {
                                         viewModel.updateEvent(eventId)
                                         viewModel.resetState()
+                                        onBack()
                                     } else {
                                         viewModel.addEvent()
                                         viewModel.resetState()
+                                        onNavigateToHomePage()
                                     }
                                     Toast
                                         .makeText(
@@ -285,7 +291,9 @@ fun dataAndTimePickerComponent(
     checkDateValidToSave: (Boolean) -> Unit,
     viewModel: EventViewModel
 ) {
-    if (date != null) viewModel.onStartDateChange(startDate = date)
+    LaunchedEffect(date) {
+        if (date != null) viewModel.onStartDateChange(startDate = date)
+    }
 
 
     val formattedStartDate = DateTimeFormatter

@@ -17,19 +17,25 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.calendarbyourselvesdacs3.data.api.MockApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.MonthDays
 import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarMonthTopBar
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarView
 import com.example.calendarbyourselvesdacs3.presentation.event.common.EventWithoutDescriptionComponent
+import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 import java.time.LocalDate
@@ -39,19 +45,35 @@ fun CalendarMonthScreen(
     viewModel: CalendarMonthViewModel = hiltViewModel(),
     onNavigateCreateEvent: (LocalDate) -> Unit,
     onNavigateDay: (LocalDate) -> Unit,
-//    onNavigateExport: () -> Unit,
-//    onNavigateImport: () -> Unit,
+    onNavigateToUpdateEvent: (eventId: String) -> Unit,
     userData: UserData?,
     onSignOut: () -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
+    homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.collectAsState()
+    val uiState = homeViewModel.uiState.collectAsStateWithLifecycle().value
+
+    var date by remember {
+        mutableStateOf<LocalDate?>(null)
+    }
 
     viewModel.collectSideEffect {
         when (it) {
-            is CalendarMonthViewModel.SideEffect.NavigateCreateEvent -> onNavigateCreateEvent(it.date)
-            is CalendarMonthViewModel.SideEffect.NavigateToDay -> onNavigateDay(it.date)
+            is CalendarMonthViewModel.SideEffect.NavigateCreateEvent -> {
+                date = it.date
+                onNavigateCreateEvent(it.date)
+            }
+            is CalendarMonthViewModel.SideEffect.NavigateToDay -> {
+                date = it.date
+                onNavigateDay(it.date)
+            }
+
         }
+    }
+
+    LaunchedEffect(Unit) {
+        homeViewModel.loadEventsByDate(date = date!!)
     }
 
     Scaffold(
@@ -60,8 +82,6 @@ fun CalendarMonthScreen(
             CalendarMonthTopBar(
                 date = state.calendarDate,
                 showReturnToDate = state.currentDate != state.calendarDate,
-//                onImportClicked = onNavigateImport,
-//                onExportClicked = onNavigateExport,
                 onReturnToDateClicked = {
                     viewModel.onResetCalendarDate()
                 },
@@ -93,12 +113,31 @@ fun CalendarMonthScreen(
                     color = Color.Red,
                     modifier = Modifier
                         .padding(top = 12.dp, end = 30.dp, start = 12.dp, bottom = 12.dp)
-                        .clickable { })
+                        .clickable { onNavigateDay(date!!) })
             }
-            LazyColumn(contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
-                items(MockApi.taskList) { task ->
-                    EventWithoutDescriptionComponent(task = task, onEventClick = {})
-                    Spacer(modifier = Modifier.height(16.dp))
+            when(uiState.eventList){
+                is Resource.Error -> {
+                    uiState.eventList.throwable?.message?.let { it1 ->
+                        Text(
+                            text = it1,
+                            color = Color.Red
+                        )
+                    }
+                }
+
+                is Resource.Loading -> {
+                }
+
+                is Resource.Success -> {
+                    LazyColumn(contentPadding = PaddingValues(all = 16.dp)) {
+                        items(uiState.eventList.data ?: emptyList()) { event ->
+                            EventWithoutDescriptionComponent(
+                                event = event,
+                                onEventClick = { onNavigateToUpdateEvent(it) }
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
                 }
             }
         }
