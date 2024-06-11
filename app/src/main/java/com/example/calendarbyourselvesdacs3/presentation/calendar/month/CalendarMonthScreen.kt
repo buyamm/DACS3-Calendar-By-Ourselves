@@ -73,7 +73,7 @@ fun CalendarMonthScreen(
         }
     }
 
-    LaunchedEffect(date) {
+    LaunchedEffect(Unit, date) {
         homeViewModel.loadEventsByDate(date = date!!)
     }
 

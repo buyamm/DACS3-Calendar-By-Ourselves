@@ -47,7 +47,7 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.ListEventScreen.name
+        startDestination = "calendar"
     ) {
         composable(Screen.SignInScreen.name) {
 
@@ -154,32 +154,6 @@ fun NavGraph(
             )
         }
 
-        // Hiển thị danh sách sự kiện
-//        composable(
-//            route = "calendar/day?date={date}",
-//            arguments = listOf(navArgument(name = "date") {}),
-//        ) {
-//            DayEventsScreen(
-//                onNavigateBack = {
-//                    navController.popBackStack()
-//                },
-//                onNavigateCreateEvent = { date ->
-//                    navController.navigate("events/create?date=${date.navArg()}")
-//                },
-//            )
-//        }
-
-        //tạo sự kiện
-//        composable(
-//            route = "events/create?date={date}",
-//            arguments = listOf(navArgument(name = "date") {}),
-//        ) {
-//            CreateEventScreen(
-//                onNavigateBack = {
-//                    navController.popBackStack()
-//                },
-//            )
-//        }
 
         composable(route = Screen.SearchScreen.name) {
             SearchScreen(
