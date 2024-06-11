@@ -19,7 +19,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,6 +35,7 @@ import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarMonthTopBar
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarView
 import com.example.calendarbyourselvesdacs3.presentation.event.common.EventWithoutDescriptionComponent
+import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 import java.time.LocalDate
@@ -73,7 +73,7 @@ fun CalendarMonthScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(date) {
         homeViewModel.loadEventsByDate(date = date!!)
     }
 
@@ -159,7 +159,9 @@ fun CalendarMonthScreen(
                         items(uiState.eventList.data ?: emptyList()) { event ->
                             EventWithoutDescriptionComponent(
                                 event = event,
-                                onEventClick = { onNavigateToUpdateEvent(it) }
+                                onEventClick = {
+                                    onNavigateToUpdateEvent(it)
+                                }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                         }
