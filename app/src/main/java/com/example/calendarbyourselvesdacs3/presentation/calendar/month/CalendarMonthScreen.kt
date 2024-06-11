@@ -34,6 +34,7 @@ import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.MonthDa
 import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarMonthTopBar
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarView
+import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.NoEventScreen
 import com.example.calendarbyourselvesdacs3.presentation.event.common.EventWithoutDescriptionComponent
 import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import org.orbitmvi.orbit.compose.collectAsState
@@ -52,8 +53,9 @@ fun CalendarMonthScreen(
     onSearchClick: () -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
-    val state by viewModel.collectAsState()
+    val state by viewModel.collectAsState() // by thì không cần .value
     val uiState = homeViewModel.uiState.collectAsStateWithLifecycle().value
+    val dataLoaded = homeViewModel.dataLoaded.collectAsStateWithLifecycle().value
 
     var date by remember {
         mutableStateOf<LocalDate?>(null)
@@ -65,6 +67,16 @@ fun CalendarMonthScreen(
             homeViewModel.loadEventsByDate(date = it)
         }
     }
+
+//    LaunchedEffect(dataLoaded) {
+//        if (dataLoaded){
+//            println("$date: ${uiState.eventQuantity}")
+//            if(uiState.eventQuantity == 0){
+//                onNavigateCreateEvent(date!!)
+//            }
+//            homeViewModel.resetDataLoaded()
+//        }
+//    }
 
 
     viewModel.collectSideEffect {
@@ -80,9 +92,6 @@ fun CalendarMonthScreen(
 
         }
     }
-
-
-
 
 
     Scaffold(
@@ -101,7 +110,9 @@ fun CalendarMonthScreen(
         },
     ) {
         Column(
-            modifier = Modifier.padding(it),
+            modifier = Modifier
+                .padding(it)
+                .fillMaxSize(),
         ) {
             if (state.monthDays != null) {
                 Calendar(
@@ -114,18 +125,21 @@ fun CalendarMonthScreen(
             }
             Divider(modifier = Modifier.fillMaxWidth(1f), color = Color.LightGray, thickness = 1.dp)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Text(
-                    text = "See all events",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Red,
-                    modifier = Modifier
-                        .padding(top = 12.dp, end = 30.dp, start = 12.dp, bottom = 12.dp)
-                        .clickable {
-                            uiState.clickedDate?.let { date ->
-                                onNavigateDay(date)
+                if (uiState.eventList?.data?.isNotEmpty() == true) {
+                    Text(
+                        text = "See all events",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Red,
+                        modifier = Modifier
+                            .padding(top = 12.dp, end = 30.dp, start = 12.dp, bottom = 12.dp)
+                            .clickable {
+                                uiState.clickedDate?.let { date ->
+                                    onNavigateDay(date)
+                                }
                             }
-                        })
+                    )
+                }
             }
             when (uiState.eventList) {
                 is Resource.Error -> {
@@ -141,22 +155,34 @@ fun CalendarMonthScreen(
                 }
 
                 is Resource.Success -> {
-                    LazyColumn(contentPadding = PaddingValues(all = 16.dp)) {
-                        items(uiState.eventList.data ?: emptyList()) { event ->
-                            EventWithoutDescriptionComponent(
-                                event = event,
-                                onEventClick = {
-                                    onNavigateToUpdateEvent(it)
-                                }
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
+
+                    if (uiState.eventList?.data?.isNotEmpty() == true) {
+                        LazyColumn(
+                            contentPadding = PaddingValues(all = 16.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            items(uiState.eventList.data) { event ->
+                                EventWithoutDescriptionComponent(
+                                    event = event,
+                                    onEventClick = {
+                                        onNavigateToUpdateEvent(it)
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                        }
+                    } else {
+                        NoEventScreen() {
+                            onNavigateCreateEvent(date!!)
                         }
                     }
+
                 }
             }
         }
     }
 }
+
 
 @Composable
 private fun Calendar(

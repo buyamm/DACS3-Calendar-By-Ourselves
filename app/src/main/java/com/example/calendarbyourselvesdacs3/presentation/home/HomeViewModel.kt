@@ -21,6 +21,8 @@ class HomeViewModel @Inject constructor(
     ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
+    private var _dataLoaded = MutableStateFlow(false)
+    val dataLoaded = _dataLoaded.asStateFlow()
 
     private val user: FirebaseUser? = repository.user()
     private var getEventsJob: Job? = null
@@ -41,7 +43,7 @@ class HomeViewModel @Inject constructor(
                 if (user != null) {
                     repository.loadEventByDate(
                         userId = user.uid,
-                        date = date,
+                        selectedDate = date,
                     ).collect { result ->
                         result?.let {
                             val events = it.data // List<Event>
@@ -60,6 +62,7 @@ class HomeViewModel @Inject constructor(
                                     )
                                 }
                             }
+                            _dataLoaded.value = true
                         }
                     }
                 }
@@ -89,13 +92,10 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    fun getEventQuantity(date: LocalDate): Int{
-        var result = 0
-        viewModelScope.launch {
-            result = repository.countEventQuantityByDate(user!!.uid, date)
-        }
-
-        return result
+    fun resetDataLoaded() {
+        _dataLoaded.value = false
     }
+
+
 
 }

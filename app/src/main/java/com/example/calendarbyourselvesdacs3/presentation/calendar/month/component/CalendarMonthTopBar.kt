@@ -3,6 +3,7 @@ package com.example.calendarbyourselvesdacs3.presentation.calendar.month.compone
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -105,6 +106,7 @@ fun CalendarMonthTopBar(
         colors = TopAppBarDefaults.smallTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
         ),
+        modifier = Modifier.padding(end = 8.dp)
     )
 }
 

@@ -8,12 +8,10 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 
 
@@ -66,10 +64,11 @@ class EventRepository {
             checkAllDay = event.checkAllDay,
             checkNotification = event.checkNotification,
             startDay = event.startDay,
-            startDate = timestampToString(event.startDay),
             endDay = event.endDay,
             colorIndex = event.colorIndex,
             documentId = documentId,
+            startDate = timestampToString(event.startDay),
+            endDate = timestampToString(event.endDay)
         )
 
         eventsRef
@@ -104,9 +103,10 @@ class EventRepository {
             "checkAllDay" to event.checkAllDay,
             "checkNotification" to event.checkNotification,
             "startDay" to event.startDay,
-            "startDate" to timestampToString(event.startDay),
             "endDay" to event.endDay,
-            "colorIndex" to event.colorIndex
+            "colorIndex" to event.colorIndex,
+            "startDate" to timestampToString(event.startDay),
+            "endDate" to timestampToString(event.endDay),
         )
 
         eventsRef
@@ -118,7 +118,7 @@ class EventRepository {
     }
 
 
-    fun loadEventByDate(userId: String, date: LocalDate): Flow<Resource<List<Event>>> =
+    fun loadEventByDate(userId: String, selectedDate: LocalDate): Flow<Resource<List<Event>>> =
         callbackFlow {
             var snapshotStateListener: ListenerRegistration? = null
 
@@ -126,7 +126,8 @@ class EventRepository {
                 snapshotStateListener = eventsRef
                     .orderBy("startDay")
                     .whereEqualTo("userId", userId)
-                    .whereEqualTo("startDate", localDateToString(date))
+                    .whereLessThanOrEqualTo("startDate", localDateToString(selectedDate))
+                    .whereGreaterThanOrEqualTo("endDate", localDateToString(selectedDate))
                     .addSnapshotListener { snapshot, e ->
                         val response = if (snapshot != null) {
                             val events = snapshot.toObjects(Event::class.java)
@@ -182,14 +183,4 @@ class EventRepository {
                 titleSnapshotStateListener?.remove()
             }
         }
-
-    suspend fun countEventQuantityByDate(userId: String, date: LocalDate): Int {
-        val querySnapshot: QuerySnapshot = eventsRef
-            .whereEqualTo("userId", userId)
-            .whereEqualTo("startDate", localDateToString(date))
-            .get()
-            .await()
-
-        return querySnapshot.size()
-    }
 }
