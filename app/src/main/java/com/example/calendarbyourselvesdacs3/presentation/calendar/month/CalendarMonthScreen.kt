@@ -73,9 +73,11 @@ fun CalendarMonthScreen(
         }
     }
 
-    LaunchedEffect(Unit, date) {
-        homeViewModel.loadEventsByDate(date = date!!)
-    }
+
+//    LaunchedEffect(Unit) {
+//        homeViewModel.loadEventsByDate(date = date!!)
+//    }
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),

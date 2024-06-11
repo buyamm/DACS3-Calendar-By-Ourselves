@@ -47,7 +47,7 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = "calendar"
+        startDestination = Screen.SignInScreen.name
     ) {
         composable(Screen.SignInScreen.name) {
 
