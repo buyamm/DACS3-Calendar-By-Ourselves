@@ -59,24 +59,30 @@ fun CalendarMonthScreen(
         mutableStateOf<LocalDate?>(null)
     }
 
+    LaunchedEffect(Unit, date) {
+        date?.let {
+            homeViewModel.onChangeDate(date = date!!)
+            homeViewModel.loadEventsByDate(date = it)
+        }
+    }
+
+
     viewModel.collectSideEffect {
         when (it) {
             is CalendarMonthViewModel.SideEffect.NavigateCreateEvent -> {
                 date = it.date
-                onNavigateCreateEvent(it.date)
+//                    onNavigateCreateEvent(date!!)
             }
+
             is CalendarMonthViewModel.SideEffect.NavigateToDay -> {
                 date = it.date
-                onNavigateDay(it.date)
             }
 
         }
     }
 
 
-//    LaunchedEffect(Unit) {
-//        homeViewModel.loadEventsByDate(date = date!!)
-//    }
+
 
 
     Scaffold(
@@ -98,32 +104,6 @@ fun CalendarMonthScreen(
             modifier = Modifier.padding(it),
         ) {
             if (state.monthDays != null) {
-                //Test
-//                val pagerState = rememberPagerState(initialPage = 0)
-//                val coroutineScope = rememberCoroutineScope()
-
-//                HorizontalPager(
-//                    count = Int.MAX_VALUE,
-//                    state = pagerState,
-//                    modifier = Modifier.fillMaxWidth()
-//                ) { page ->
-//                    LaunchedEffect(key1 = page) {
-//                        coroutineScope.launch {
-//                            viewModel.scrollMonth(page.toLong())
-//                        }
-//                    }
-//                    Calendar(
-//                        date = state.currentDate,
-//                        monthDays = state.monthDays!!,
-//                        onPreviousMonth = { viewModel.onPreviousMonth() },
-//                        onNextMonth = { viewModel.onNextMonth() },
-//                        onDateClicked = { date -> viewModel.onDateClicked(date) },
-//                    )
-//                }
-
-
-//                ===================================
-
                 Calendar(
                     date = state.currentDate,
                     monthDays = state.monthDays!!,
@@ -141,9 +121,13 @@ fun CalendarMonthScreen(
                     color = Color.Red,
                     modifier = Modifier
                         .padding(top = 12.dp, end = 30.dp, start = 12.dp, bottom = 12.dp)
-                        .clickable { onNavigateDay(date!!) })
+                        .clickable {
+                            uiState.clickedDate?.let { date ->
+                                onNavigateDay(date)
+                            }
+                        })
             }
-            when(uiState.eventList){
+            when (uiState.eventList) {
                 is Resource.Error -> {
                     uiState.eventList.throwable?.message?.let { it1 ->
                         Text(

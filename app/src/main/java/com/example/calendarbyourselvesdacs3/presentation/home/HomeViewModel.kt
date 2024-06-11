@@ -6,6 +6,7 @@ import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepositor
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -22,30 +23,42 @@ class HomeViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     private val user: FirebaseUser? = repository.user()
+    private var getEventsJob: Job? = null
 
+    fun onChangeDate(date: LocalDate){
+        _uiState.update {
+            it.copy(
+                clickedDate = date
+            )
+        }
+    }
 
     fun loadEventsByDate(date: LocalDate) {
-        viewModelScope.launch {
-            if (user != null) {
-                repository.loadEventByDate(
-                    userId = user.uid,
-                    date = date
-                ).collect { result ->
-                    result?.let {
-                        val data = it.data // List<Event>
-                        if (data != null) {
-                            _uiState.update { homeUiState ->
-                                homeUiState.copy(
-                                    eventList = it,
-                                    eventQuantity = data.size,
-                                )
-                            }
-                        } else {
-                            _uiState.update { homeUiState ->
-                                homeUiState.copy(
-                                    eventList = it,
-                                    eventQuantity = 0,
-                                )
+        if (date != null) {
+            getEventsJob?.cancel()
+
+            getEventsJob = viewModelScope.launch {
+                if (user != null) {
+                    repository.loadEventByDate(
+                        userId = user.uid,
+                        date = date,
+                    ).collect { result ->
+                        result?.let {
+                            val events = it.data // List<Event>
+                            if (events != null) {
+                                _uiState.update { homeUiState ->
+                                    homeUiState.copy(
+                                        eventList = it,
+                                        eventQuantity = events.size,
+                                    )
+                                }
+                            } else {
+                                _uiState.update { homeUiState ->
+                                    homeUiState.copy(
+                                        eventList = it,
+                                        eventQuantity = 0,
+                                    )
+                                }
                             }
                         }
                     }
@@ -75,5 +88,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+
+    fun getEventQuantity(date: LocalDate): Int{
+        var result = 0
+        viewModelScope.launch {
+            result = repository.countEventQuantityByDate(user!!.uid, date)
+        }
+
+        return result
+    }
 
 }

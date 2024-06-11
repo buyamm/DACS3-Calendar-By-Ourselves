@@ -292,7 +292,10 @@ fun dataAndTimePickerComponent(
     viewModel: EventViewModel
 ) {
     LaunchedEffect(date) {
-        if (date != null) viewModel.onStartDateChange(startDate = date)
+        if (date != null) {
+            viewModel.onStartDateChange(startDate = date)
+            viewModel.onEndDateChange(endDate = date)
+        }
     }
 
 

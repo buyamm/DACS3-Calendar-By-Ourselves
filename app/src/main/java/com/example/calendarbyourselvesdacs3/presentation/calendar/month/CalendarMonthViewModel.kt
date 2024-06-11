@@ -1,7 +1,5 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month
 
-import android.util.Log
-import androidx.compose.foundation.rememberScrollState
 import androidx.lifecycle.ViewModel
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.GetMonthDays
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.MonthDays
@@ -82,7 +80,7 @@ class CalendarMonthViewModel @Inject constructor(
 //    ========= show date when clicked =============
     fun onDateClicked(date: LocalDate) {
 
-        Log.d("Test =============>>>>", date.toString())
+//        Log.d("Test =============>>>>", date.toString())
 
         intent {
             if ((state.events[date] ?: 0) > 0) {
