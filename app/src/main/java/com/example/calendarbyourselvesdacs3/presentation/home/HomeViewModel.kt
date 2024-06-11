@@ -3,14 +3,17 @@ package com.example.calendarbyourselvesdacs3.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
+import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -89,13 +92,21 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    fun getEventQuantity(date: LocalDate): Int{
-        var result = 0
-        viewModelScope.launch {
-            result = repository.countEventQuantityByDate(user!!.uid, date)
+    suspend fun getEvent(): List<DottedEvent> {
+
+        val firestore = FirebaseFirestore.getInstance()
+        val snapshot = firestore.collection("events")
+            .whereEqualTo("userId", user!!.uid)
+            .get()
+            .await()
+        val tmp = snapshot.documents?.map {
+            DottedEvent(
+                startDate = it.getString("startDate").toString()
+            )
         }
 
-        return result
+        return tmp!!
+
     }
 
 }

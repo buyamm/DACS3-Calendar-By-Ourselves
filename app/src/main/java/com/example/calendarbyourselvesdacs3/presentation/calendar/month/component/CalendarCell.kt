@@ -40,8 +40,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.data.remote.FirebaseRealtime
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.CalendarDate
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
+import com.example.calendarbyourselvesdacs3.presentation.calendar.month.CalendarMonthViewModel
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
 import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
+import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -55,16 +57,12 @@ fun CalendarCell(
     date: CalendarDate,
     renderCell: @Composable BoxScope.() -> Unit = {},
     onCellClicked: (CalendarDate) -> Unit = {},
-    viewModel: EventViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     val appColors = LocalAppColors.current
-    val myRef = FirebaseRealtime().myRef
     var stateColor by remember { mutableStateOf(false) }
-    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
 
-    LaunchedEffect(Unit) {
-        Log.d("99999999999", uiState.startDate.toString())
-    }
+
 
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -93,7 +91,6 @@ fun CalendarCell(
             }
             .clickable { onCellClicked(date) }
     ) {
-//        Log.d("----------------------------->", date.date.toString())
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -132,30 +129,20 @@ fun CalendarCell(
             }
         }
 
+        LaunchedEffect(Unit, date.date) {
 
-        //        ============ Đánh dấu sự kiện được thêm vào lịch  ============
-        myRef.child(date.date.toString()).addValueEventListener(object : ValueEventListener {
-
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                val value = snapshot.getValue(Info::class.java)
-                if (value != null)
-                    stateColor = true
-                else
-                    stateColor = false
-
+            var check = homeViewModel.getEvent().find { date.date.toString() == it.startDate.toString() }
+            if(check?.startDate.toString() == date.date.toString()) {
+                stateColor = true
+            }
+            else {
+                stateColor = false
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.w("Test------->", "Failed to read value.", error.toException())
-            }
-
-        })
+        }
 
 
     }
 }
 
-data class Info(val date: String? = null)
 

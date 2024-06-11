@@ -22,6 +22,10 @@ data class Event(
 
 )
 
+data class DottedEvent(
+    val startDate: String? = ""
+)
+
 fun timestampToString(timestamp: Timestamp): String{
     val instant = Instant.ofEpochSecond(timestamp.seconds, timestamp.nanoseconds.toLong())
     val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())

@@ -1,5 +1,6 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.GetMonthDays
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.MonthDays

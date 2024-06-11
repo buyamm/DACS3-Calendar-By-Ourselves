@@ -1,14 +1,18 @@
 package com.example.calendarbyourselvesdacs3.data.repository.event
 
 import com.example.calendarbyourselvesdacs3.data.Resource
+import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.localDateToString
 import com.example.calendarbyourselvesdacs3.domain.model.event.timestampToString
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.auth.User
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -183,13 +187,24 @@ class EventRepository {
             }
         }
 
-    suspend fun countEventQuantityByDate(userId: String, date: LocalDate): Int {
-        val querySnapshot: QuerySnapshot = eventsRef
-            .whereEqualTo("userId", userId)
-            .whereEqualTo("startDate", localDateToString(date))
-            .get()
-            .await()
-
-        return querySnapshot.size()
-    }
+//    suspend fun getDateHaveEvent(userId: String): String {
+//
+//        val querySnapshot: QuerySnapshot = eventsRef
+//            .whereEqualTo("userId", userId)
+//            .get()
+//            .await()
+//
+//        val tmp = querySnapshot.documents.firstOrNull()?.let {
+//            DottedEvent(
+//                startDate = it.getString("startDate").toString()
+//            )
+//        }
+//
+//
+//        return tmp.toString()
+//
+//    }
 }
+
+
+

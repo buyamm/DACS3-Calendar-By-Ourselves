@@ -1,5 +1,6 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,6 +59,7 @@ fun CalendarMonthScreen(
     var date by remember {
         mutableStateOf<LocalDate?>(null)
     }
+
 
     LaunchedEffect(Unit, date) {
         date?.let {
