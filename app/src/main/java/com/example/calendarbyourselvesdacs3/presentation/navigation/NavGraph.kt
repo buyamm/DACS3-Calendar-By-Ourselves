@@ -27,7 +27,6 @@ import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInScreen
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 
 @SuppressLint("StateFlowValueCalledInComposition", "ComposableDestinationInComposeScope")
@@ -224,10 +223,11 @@ fun NavGraph(
 
 //        Event List
         composable(
-//            route = Screen.ListEventScreen.name + "/event-list?date={date}"
-            route = Screen.ListEventScreen.name
+            route = Screen.ListEventScreen.name + "/event-list?date={date}"
+//            route = Screen.ListEventScreen.name
         ) {
-            val date = LocalDate.parse("2024-06-09") // kiểu LocalDate
+//            val date = LocalDate.parse("2024-06-09") // kiểu LocalDate
+            val date = it.arguments?.getString("date")?.localDateArg()!!
             googleAuthUiClient.getSignedInUser()
                 ?.let { it1 ->
                     ListEventScreen(

@@ -61,19 +61,20 @@ fun CalendarMonthScreen(
 
     viewModel.collectSideEffect {
         when (it) {
+            is CalendarMonthViewModel.SideEffect.NavigateCreateEvent -> {
+                date = it.date
+                onNavigateCreateEvent(it.date)
+            }
             is CalendarMonthViewModel.SideEffect.NavigateToDay -> {
                 date = it.date
                 onNavigateDay(it.date)
             }
-            is CalendarMonthViewModel.SideEffect.NavigateCreateEvent -> {
-                date = it.date
-//                onNavigateCreateEvent(it.date)
-            }
+
         }
     }
 
-    LaunchedEffect(Unit, date) {
-        date?.let { homeViewModel.loadEventsByDate(date = it) }
+    LaunchedEffect(Unit) {
+        homeViewModel.loadEventsByDate(date = date!!)
     }
 
     Scaffold(
