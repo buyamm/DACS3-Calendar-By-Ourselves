@@ -90,6 +90,8 @@ fun InteractWithTaskScreen(
         }
     }
 
+    val tmp = uiState.eventAddedStatus
+
     Scaffold(
 //        modifier = Modifier.nestedScroll(TopAppBarDefaults.enterAlwaysScrollBehavior().nestedScrollConnection),
         topBar = {

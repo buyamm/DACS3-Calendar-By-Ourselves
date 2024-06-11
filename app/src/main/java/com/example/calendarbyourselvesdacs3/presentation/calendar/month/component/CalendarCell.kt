@@ -17,6 +17,7 @@ import androidx.compose.material.icons.rounded.Brightness1
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,10 +35,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.data.remote.FirebaseRealtime
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.CalendarDate
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
+import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -51,10 +55,16 @@ fun CalendarCell(
     date: CalendarDate,
     renderCell: @Composable BoxScope.() -> Unit = {},
     onCellClicked: (CalendarDate) -> Unit = {},
+    viewModel: EventViewModel = hiltViewModel()
 ) {
     val appColors = LocalAppColors.current
     val myRef = FirebaseRealtime().myRef
     var stateColor by remember { mutableStateOf(false) }
+    val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+
+    LaunchedEffect(Unit) {
+        Log.d("99999999999", uiState.startDate.toString())
+    }
 
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -63,14 +73,13 @@ fun CalendarCell(
             .calendarCellPadding(index)
             .clip(RoundedCornerShape(2.dp))
             .let {
-                if(!date.isInMonth && isToday) {
+                if (!date.isInMonth && isToday) {
                     it
                         .background(appColors.outOfMonthBackground)
                         .graphicsLayer {
                             alpha = 0.5f
                         }
-                }
-                else if (isToday) {
+                } else if (isToday) {
                     it.background(appColors.inMonthBackground)
                 } else if (date.isInMonth) {
                     it.background(appColors.inMonthBackground)
@@ -84,11 +93,13 @@ fun CalendarCell(
             }
             .clickable { onCellClicked(date) }
     ) {
-        Log.d("----------------------------->", date.date.toString())
+//        Log.d("----------------------------->", date.date.toString())
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(top = 6.dp).height(36.dp)
+            modifier = Modifier
+                .padding(top = 6.dp)
+                .height(36.dp)
         ) {
             Text(
                 modifier =
@@ -129,7 +140,6 @@ fun CalendarCell(
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 val value = snapshot.getValue(Info::class.java)
-//                Log.d("000000000000", value?.date.toString())
                 if (value != null)
                     stateColor = true
                 else

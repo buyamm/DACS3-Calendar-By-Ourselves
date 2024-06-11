@@ -86,7 +86,7 @@ class CalendarMonthViewModel @Inject constructor(
 
         intent {
             if ((state.events[date] ?: 0) > 0) {
-//                postSideEffect(SideEffect.NavigateToDay(date))
+                postSideEffect(SideEffect.NavigateToDay(date))
             } else {
                 postSideEffect(SideEffect.NavigateCreateEvent(date))
             }
