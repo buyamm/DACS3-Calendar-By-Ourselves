@@ -48,7 +48,7 @@ fun NavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.ListEventScreen.name
+        startDestination = Screen.SignInScreen.name
     ) {
         composable(Screen.SignInScreen.name) {
 
