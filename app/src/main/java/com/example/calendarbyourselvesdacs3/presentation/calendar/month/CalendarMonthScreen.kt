@@ -19,7 +19,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,6 +35,7 @@ import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarMonthTopBar
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.CalendarView
 import com.example.calendarbyourselvesdacs3.presentation.event.common.EventWithoutDescriptionComponent
+import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 import java.time.LocalDate
@@ -59,23 +59,31 @@ fun CalendarMonthScreen(
         mutableStateOf<LocalDate?>(null)
     }
 
+    LaunchedEffect(Unit, date) {
+        date?.let {
+            homeViewModel.onChangeDate(date = date!!)
+            homeViewModel.loadEventsByDate(date = it)
+        }
+    }
+
+
     viewModel.collectSideEffect {
         when (it) {
             is CalendarMonthViewModel.SideEffect.NavigateCreateEvent -> {
                 date = it.date
-                onNavigateCreateEvent(it.date)
+//                    onNavigateCreateEvent(date!!)
             }
+
             is CalendarMonthViewModel.SideEffect.NavigateToDay -> {
                 date = it.date
-                onNavigateDay(it.date)
             }
 
         }
     }
 
-    LaunchedEffect(Unit) {
-        homeViewModel.loadEventsByDate(date = date!!)
-    }
+
+
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -96,32 +104,6 @@ fun CalendarMonthScreen(
             modifier = Modifier.padding(it),
         ) {
             if (state.monthDays != null) {
-                //Test
-//                val pagerState = rememberPagerState(initialPage = 0)
-//                val coroutineScope = rememberCoroutineScope()
-
-//                HorizontalPager(
-//                    count = Int.MAX_VALUE,
-//                    state = pagerState,
-//                    modifier = Modifier.fillMaxWidth()
-//                ) { page ->
-//                    LaunchedEffect(key1 = page) {
-//                        coroutineScope.launch {
-//                            viewModel.scrollMonth(page.toLong())
-//                        }
-//                    }
-//                    Calendar(
-//                        date = state.currentDate,
-//                        monthDays = state.monthDays!!,
-//                        onPreviousMonth = { viewModel.onPreviousMonth() },
-//                        onNextMonth = { viewModel.onNextMonth() },
-//                        onDateClicked = { date -> viewModel.onDateClicked(date) },
-//                    )
-//                }
-
-
-//                ===================================
-
                 Calendar(
                     date = state.currentDate,
                     monthDays = state.monthDays!!,
@@ -139,9 +121,13 @@ fun CalendarMonthScreen(
                     color = Color.Red,
                     modifier = Modifier
                         .padding(top = 12.dp, end = 30.dp, start = 12.dp, bottom = 12.dp)
-                        .clickable { onNavigateDay(date!!) })
+                        .clickable {
+                            uiState.clickedDate?.let { date ->
+                                onNavigateDay(date)
+                            }
+                        })
             }
-            when(uiState.eventList){
+            when (uiState.eventList) {
                 is Resource.Error -> {
                     uiState.eventList.throwable?.message?.let { it1 ->
                         Text(
@@ -159,7 +145,9 @@ fun CalendarMonthScreen(
                         items(uiState.eventList.data ?: emptyList()) { event ->
                             EventWithoutDescriptionComponent(
                                 event = event,
-                                onEventClick = { onNavigateToUpdateEvent(it) }
+                                onEventClick = {
+                                    onNavigateToUpdateEvent(it)
+                                }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                         }

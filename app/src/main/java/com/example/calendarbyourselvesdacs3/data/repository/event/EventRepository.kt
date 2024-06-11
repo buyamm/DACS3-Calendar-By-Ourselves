@@ -8,19 +8,23 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 
 
 const val EVENTS_COLLECTION_REF = "events"
 
-class EventRepository{
+class EventRepository {
     private val eventsRef: CollectionReference =
         Firebase.firestore.collection(EVENTS_COLLECTION_REF)
+
     fun user() = Firebase.auth.currentUser
+
     /**
      * .addOnSuccessListener { ... }: Đây là một hàm callback được gọi khi thao tác lấy dữ liệu từ Firestore thành công.
      *
@@ -28,7 +32,7 @@ class EventRepository{
      *
      * onSuccess.invoke(...): Gọi hàm onSuccess với đối tượng Event được chuyển đổi. Nếu tài liệu không tồn tại, it sẽ là null và toObject sẽ trả về null.
      * */
-     fun getEvent(
+    fun getEvent(
         eventId: String,
         onError: (Throwable?) -> Unit,
         onGetEvent: (Event?) -> Unit
@@ -77,7 +81,7 @@ class EventRepository{
     }
 
 
-     fun deleteEvent(eventId: String, onComplete: (Boolean) -> Unit) {
+    fun deleteEvent(eventId: String, onComplete: (Boolean) -> Unit) {
         eventsRef
             .document(eventId)
             .delete()
@@ -93,7 +97,7 @@ class EventRepository{
      * "description" to description: Cặp khóa-giá trị để cập nhật thuộc tính description.
      * "colorIndex" to colorIndex: Cặp khóa-giá trị để cập nhật thuộc tính colorIndex.
      * */
-     fun updateEvent(event: Event, onComplete: (Boolean) -> Unit) {
+    fun updateEvent(event: Event, onComplete: (Boolean) -> Unit) {
         val updateData = hashMapOf<String, Any>(
             "title" to event.title,
             "description" to event.description,
@@ -114,68 +118,78 @@ class EventRepository{
     }
 
 
+    fun loadEventByDate(userId: String, date: LocalDate): Flow<Resource<List<Event>>> =
+        callbackFlow {
+            var snapshotStateListener: ListenerRegistration? = null
 
-    fun loadEventByDate(userId: String, date: LocalDate): Flow<Resource<List<Event>>> = callbackFlow {
-        var snapshotStateListener: ListenerRegistration? = null
-
-        try {
-            snapshotStateListener = eventsRef
-                .orderBy("startDay")
-                .whereEqualTo("userId", userId)
-                .whereEqualTo("startDate", localDateToString(date))
-                .addSnapshotListener{ snapshot, e ->
-                    val response = if (snapshot != null) {
-                        val events = snapshot.toObjects(Event::class.java)
-                        Resource.Success(data = events)
-                    } else {
-                        Resource.Error(throwable = e?.cause)
+            try {
+                snapshotStateListener = eventsRef
+                    .orderBy("startDay")
+                    .whereEqualTo("userId", userId)
+                    .whereEqualTo("startDate", localDateToString(date))
+                    .addSnapshotListener { snapshot, e ->
+                        val response = if (snapshot != null) {
+                            val events = snapshot.toObjects(Event::class.java)
+                            Resource.Success(data = events)
+                        } else {
+                            Resource.Error(throwable = e?.cause)
+                        }
+                        trySend(response)
                     }
-                    trySend(response)
-                }
-        }catch (e: Exception){
-            trySend(Resource.Error(e?.cause))
-            e.printStackTrace()
+            } catch (e: Exception) {
+                trySend(Resource.Error(e?.cause))
+                e.printStackTrace()
+            }
+            /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
+            awaitClose {
+                snapshotStateListener?.remove()
+            }
         }
-        /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
-        awaitClose {
-            snapshotStateListener?.remove()
-        }
-    }
 
 
+    fun loadEventBySearch(userId: String, queryValue: String): Flow<Resource<List<Event>>> =
+        callbackFlow {
+            var titleSnapshotStateListener: ListenerRegistration? = null
 
-    fun loadEventBySearch(userId: String, queryValue: String): Flow<Resource<List<Event>>> = callbackFlow {
-        var titleSnapshotStateListener: ListenerRegistration? = null
-
-        try {
-            titleSnapshotStateListener = eventsRef
-                .whereEqualTo("userId", userId)
+            try {
+                titleSnapshotStateListener = eventsRef
+                    .whereEqualTo("userId", userId)
 ////                .whereGreaterThanOrEqualTo("title", queryValue)
 //                .whereLessThanOrEqualTo("title", queryValue + "\uf8ff")
-                .orderBy("startDay")
-                .addSnapshotListener{ snapshot, e ->
-                    val response = if (snapshot != null) {
-                        val events = snapshot.documents
-                            .filter { document ->
-                                val title = document.getString("title")?.toLowerCase()
-                                title?.contains(queryValue.toLowerCase())?: false
-                            }
-                            .mapNotNull { document ->
-                                document.toObject(Event::class.java)
-                            }
-                        Resource.Success(data = events)
-                    } else {
-                        Resource.Error(throwable = e?.cause)
+                    .orderBy("startDay")
+                    .addSnapshotListener { snapshot, e ->
+                        val response = if (snapshot != null) {
+                            val events = snapshot.documents
+                                .filter { document ->
+                                    val title = document.getString("title")?.toLowerCase()
+                                    title?.contains(queryValue.toLowerCase()) ?: false
+                                }
+                                .mapNotNull { document ->
+                                    document.toObject(Event::class.java)
+                                }
+                            Resource.Success(data = events)
+                        } else {
+                            Resource.Error(throwable = e?.cause)
+                        }
+                        trySend(response)
                     }
-                    trySend(response)
-                }
-        }catch (e: Exception){
-            trySend(Resource.Error(e?.cause))
-            e.printStackTrace()
+            } catch (e: Exception) {
+                trySend(Resource.Error(e?.cause))
+                e.printStackTrace()
+            }
+            /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
+            awaitClose {
+                titleSnapshotStateListener?.remove()
+            }
         }
-        /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
-        awaitClose {
-            titleSnapshotStateListener?.remove()
-        }
+
+    suspend fun countEventQuantityByDate(userId: String, date: LocalDate): Int {
+        val querySnapshot: QuerySnapshot = eventsRef
+            .whereEqualTo("userId", userId)
+            .whereEqualTo("startDate", localDateToString(date))
+            .get()
+            .await()
+
+        return querySnapshot.size()
     }
 }
