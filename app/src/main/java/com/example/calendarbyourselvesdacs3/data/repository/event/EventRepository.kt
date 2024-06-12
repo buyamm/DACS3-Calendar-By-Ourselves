@@ -5,14 +5,12 @@ import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.localDateToString
 import com.example.calendarbyourselvesdacs3.domain.model.event.timestampToString
+import com.example.calendarbyourselvesdacs3.domain.model.user.User
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.QuerySnapshot
-import com.google.firebase.firestore.auth.User
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -22,10 +20,12 @@ import java.time.LocalDate
 
 
 const val EVENTS_COLLECTION_REF = "events"
-
+const val USERS_COLLECTION_REF = "users"
 class EventRepository {
     private val eventsRef: CollectionReference =
         Firebase.firestore.collection(EVENTS_COLLECTION_REF)
+    private val usersRef: CollectionReference =
+        Firebase.firestore.collection(USERS_COLLECTION_REF)
 
     fun user() = Firebase.auth.currentUser
 
@@ -215,6 +215,38 @@ class EventRepository {
 
     }
 
+    fun loadUserBySearch(queryValue: String): Flow<Resource<List<User>>> =
+        callbackFlow {
+            var titleSnapshotStateListener: ListenerRegistration? = null
+
+            try {
+                titleSnapshotStateListener = usersRef
+                    .orderBy("email")
+                    .addSnapshotListener { snapshot, e ->
+                        val response = if (snapshot != null) {
+                            val users = snapshot.documents
+                                .filter { document ->
+                                    val email = document.getString("email")?.toLowerCase()
+                                    email?.contains(queryValue.toLowerCase()) ?: false
+                                }
+                                .mapNotNull { document ->
+                                    document.toObject(User::class.java)
+                                }
+                            Resource.Success(data = users)
+                        } else {
+                            Resource.Error(throwable = e?.cause)
+                        }
+                        trySend(response)
+                    }
+            } catch (e: Exception) {
+                trySend(Resource.Error(e?.cause))
+                e.printStackTrace()
+            }
+            /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
+            awaitClose {
+                titleSnapshotStateListener?.remove()
+            }
+        }
 }
 
 

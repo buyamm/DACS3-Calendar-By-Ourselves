@@ -2,15 +2,19 @@ package com.example.calendarbyourselvesdacs3.presentation.event
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.stringToLocalTime
+import com.example.calendarbyourselvesdacs3.domain.model.user.User
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -28,6 +32,7 @@ class EventViewModel @Inject constructor (
 
 
     private val user: FirebaseUser? = repository.user()
+    private var getUsersJob: Job? = null
 
     fun onTitleChange(title: String) {
         _uiState.update {
@@ -71,6 +76,51 @@ class EventViewModel @Inject constructor (
         }
     }
 
+    fun onAddSelectedUser(user: User){
+        _uiState.update { eventUiState ->
+            val updatedList = eventUiState.selectedUserList + user
+            eventUiState.copy(selectedUserList = updatedList)
+        }
+    }
+
+    fun onRemoveSelectedUser(user: User){
+        _uiState.update { eventUiState ->
+            val updatedList = eventUiState.selectedUserList - user
+            eventUiState.copy(selectedUserList = updatedList)
+        }
+    }
+    fun onQueryChange(searchQuery: String){
+        _uiState.update {
+            it.copy(searchQuery = searchQuery)
+        }
+    }
+
+    fun updateUserListSearch(query: String){
+        loadUserBySearch(query)
+    }
+
+    private fun loadUserBySearch(query: String = ""){
+        _uiState.update {
+            it.copy(searchQuery = query)
+        }
+
+        if(query.isNotEmpty()){
+            getUsersJob?.cancel()
+
+
+            getUsersJob = viewModelScope.launch {
+                repository.loadUserBySearch(
+                    queryValue = query
+                ).collect{
+                    _uiState.update {eventUiState ->
+                        eventUiState.copy(userList = it)
+                    }
+                }
+
+            }
+        }
+    }
+
     fun onCheckAllDayChange(
         isCheckAllDay: Boolean,
         defaultStartTime: String,
@@ -79,8 +129,8 @@ class EventViewModel @Inject constructor (
         _uiState.update {
             it.copy(
                 isCheckAllDay = isCheckAllDay,
-                startTime = if(isCheckAllDay) stringToLocalTime(defaultStartTime) else _uiState.value.startTime,
-                endTime = if(isCheckAllDay) stringToLocalTime(defaultEndTime) else _uiState.value.endTime
+                startTime = if(isCheckAllDay) stringToLocalTime(defaultStartTime) else LocalTime.now(),
+                endTime = if(isCheckAllDay) stringToLocalTime(defaultEndTime) else LocalTime.now().plusHours(1)
             )
         }
     }

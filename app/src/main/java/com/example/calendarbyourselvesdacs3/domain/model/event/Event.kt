@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 
 data class Event(
     val userId: String? = "",
-    val title: String = "",
+    val title: String = "New event",
     val description: String = "",
     val checkAllDay: Boolean = false,
     val checkNotification: Boolean = false,
