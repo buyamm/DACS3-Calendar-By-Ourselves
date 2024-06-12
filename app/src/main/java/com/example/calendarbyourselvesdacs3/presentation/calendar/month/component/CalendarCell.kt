@@ -17,6 +17,7 @@ import androidx.compose.material.icons.rounded.Brightness1
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,10 +32,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.calendarbyourselvesdacs3.common.date.listBetweenDates
 import com.example.calendarbyourselvesdacs3.data.remote.FirebaseRealtime
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.CalendarDate
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
+import com.example.calendarbyourselvesdacs3.presentation.calendar.month.CalendarMonthViewModel
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
+import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
+import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -48,10 +55,12 @@ fun CalendarCell(
     date: CalendarDate,
     renderCell: @Composable BoxScope.() -> Unit = {},
     onCellClicked: (CalendarDate) -> Unit = {},
+    homeViewModel: HomeViewModel = hiltViewModel(),
 ) {
     val appColors = LocalAppColors.current
-    val myRef = FirebaseRealtime().myRef
     var stateColor by remember { mutableStateOf(false) }
+
+
 
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -60,14 +69,13 @@ fun CalendarCell(
             .calendarCellPadding(index)
             .clip(RoundedCornerShape(2.dp))
             .let {
-                if(!date.isInMonth && isToday) {
+                if (!date.isInMonth && isToday) {
                     it
                         .background(appColors.outOfMonthBackground)
                         .graphicsLayer {
                             alpha = 0.5f
                         }
-                }
-                else if (isToday) {
+                } else if (isToday) {
                     it.background(appColors.inMonthBackground)
                 } else if (date.isInMonth) {
                     it.background(appColors.inMonthBackground)
@@ -85,7 +93,9 @@ fun CalendarCell(
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(top = 6.dp).height(36.dp)
+            modifier = Modifier
+                .padding(top = 6.dp)
+                .height(36.dp)
         ) {
             Text(
                 modifier =
@@ -118,31 +128,19 @@ fun CalendarCell(
             }
         }
 
+        LaunchedEffect(Unit, date.date) {
 
-        //        ============ Đánh dấu sự kiện được thêm vào lịch  ============
-        myRef.child(date.date.toString()).addValueEventListener(object : ValueEventListener {
-
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                val value = snapshot.getValue(Info::class.java)
-//                Log.d("000000000000", value?.date.toString())
-                if (value != null)
-                    stateColor = true
-                else
-                    stateColor = false
-
+            var check = homeViewModel.getDateHaveEventVM().find { date.date.toString() == it}
+            if(check == date.date.toString()) {
+                stateColor = true
+            }
+            else {
+                stateColor = false
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.w("Test------->", "Failed to read value.", error.toException())
-            }
-
-        })
-
+        }
 
     }
 }
 
-data class Info(val date: String? = null)
 

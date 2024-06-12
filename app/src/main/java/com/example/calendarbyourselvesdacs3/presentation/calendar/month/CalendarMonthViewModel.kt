@@ -1,5 +1,6 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.GetMonthDays
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.MonthDays
@@ -84,7 +85,7 @@ class CalendarMonthViewModel @Inject constructor(
 
         intent {
             if ((state.events[date] ?: 0) > 0) {
-//                postSideEffect(SideEffect.NavigateToDay(date))
+                postSideEffect(SideEffect.NavigateToDay(date))
             } else {
                 postSideEffect(SideEffect.NavigateCreateEvent(date))
             }

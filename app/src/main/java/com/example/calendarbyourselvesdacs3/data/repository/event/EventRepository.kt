@@ -1,17 +1,23 @@
 package com.example.calendarbyourselvesdacs3.data.repository.event
 
 import com.example.calendarbyourselvesdacs3.data.Resource
+import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.localDateToString
 import com.example.calendarbyourselvesdacs3.domain.model.event.timestampToString
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.auth.User
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 
 
@@ -183,4 +189,35 @@ class EventRepository {
                 titleSnapshotStateListener?.remove()
             }
         }
+
+
+    suspend fun getDateHaveEventRepo(userId: String): List<DottedEvent> {
+
+        try {
+            val querySnapshot: QuerySnapshot = eventsRef
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+
+            val data = querySnapshot.documents.map {
+                DottedEvent(
+                    startDate = it.getString("startDate"),
+                    endDate = it.getString("endDate")
+                )
+            }
+            return data
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+
+        return emptyList()
+
+
+    }
+
 }
+
+
+
+
+

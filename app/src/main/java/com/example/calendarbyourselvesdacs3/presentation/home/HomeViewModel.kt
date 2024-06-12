@@ -2,15 +2,20 @@ package com.example.calendarbyourselvesdacs3.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.calendarbyourselvesdacs3.common.date.getDatesBetween
+import com.example.calendarbyourselvesdacs3.common.room.converter.LocalDateConverter
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
+import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -95,6 +100,23 @@ class HomeViewModel @Inject constructor(
     fun resetDataLoaded() {
         _dataLoaded.value = false
     }
+
+
+    suspend fun getDateHaveEventVM(): List<String> {
+
+        var data = repository.getDateHaveEventRepo(user!!.uid)
+        var tmpList = mutableListOf<String>()
+
+        for (i in data) {
+            for (j in getDatesBetween(LocalDateConverter.toDate(i.startDate)!!, LocalDateConverter.toDate(i.endDate)!!)) {
+                tmpList.add(j.toString())
+            }
+        }
+
+        return tmpList
+
+    }
+
 
 
 
