@@ -22,22 +22,34 @@ fun UserSearchResult(user: User, onAddUser: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .padding(4.dp)
+            .clickable {
+                onAddUser()
+            }
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    onAddUser()
-                },
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
                 Text(
-                    text = user.email,
+                    text = user.username,
                     style = MaterialTheme.typography.bodyMedium,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.weight(1f)
                 )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = user.email,
+                fontSize = 12.sp,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

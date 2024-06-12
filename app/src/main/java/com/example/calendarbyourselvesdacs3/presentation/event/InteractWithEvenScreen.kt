@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -37,9 +38,11 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -65,6 +68,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.event.PairColor
+import com.example.calendarbyourselvesdacs3.domain.model.user.User
 import com.example.calendarbyourselvesdacs3.presentation.event.component.SelectedUserResult
 import com.example.calendarbyourselvesdacs3.presentation.event.component.UserSearchResult
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
@@ -212,7 +216,7 @@ fun InteractWithTaskScreen(
                 )
             }
 
-            item{
+            item {
                 Spacer(modifier = Modifier.height(24.dp))
                 addGuestComponent(uiState, viewModel)
                 Spacer(modifier = Modifier.height(24.dp))
@@ -679,22 +683,26 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
             modifier = Modifier.width(50.dp)
         )
 
-
         Box(modifier = Modifier
             .fillMaxWidth()
             .clickable {
                 isSheetOpen = true
-            }) {
+            }
+        ) {
+            if(uiState.selectedUserList.isNotEmpty()){
+                EmailBoxes(users = uiState.selectedUserList)
+            }else{
                 Text(
                     text = placeholderText,
                     fontSize = 20.sp,
                     color = Color.Gray,
                     modifier = Modifier.align(Alignment.CenterStart)
                 )
+            }
         }
     }
 
-    if(isSheetOpen){
+    if (isSheetOpen) {
         ModalBottomSheet(
             sheetState = sheetState,
             onDismissRequest = { isSheetOpen = false }
@@ -728,12 +736,15 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
                         text = "Done",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF596FB7)
+                        color = Color(0xFF596FB7),
+                        modifier = Modifier.clickable {
+                            isSheetOpen = false
+                        }
                     )
                 },
             ) {
-                if(uiState.searchQuery.isNotEmpty()){
-                    when(uiState.userList){
+                if (uiState.searchQuery.isNotEmpty()) {
+                    when (uiState.userList) {
                         is Resource.Error -> {
                             uiState.userList.throwable?.message?.let { it1 ->
                                 Text(
@@ -752,18 +763,30 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
                         }
 
                         is Resource.Success -> {
-                            LazyColumn(contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
-                                items(uiState.userList.data ?: emptyList()){user ->
-                                    UserSearchResult(user = user){
+                            LazyColumn(
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    top = 16.dp,
+                                    bottom = 16.dp
+                                )
+                            ) {
+                                items(uiState.userList.data ?: emptyList()) { user ->
+                                    UserSearchResult(user = user) {
                                         viewModel.onAddSelectedUser(user)
                                     }
                                 }
                             }
                         }
                     }
-                }else{
-                    LazyColumn(contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
-                        items(uiState.selectedUserList){user ->
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            top = 16.dp,
+                            bottom = 16.dp
+                        )
+                    ) {
+                        items(uiState.selectedUserList) { user ->
                             SelectedUserResult(user = user) {
                                 viewModel.onRemoveSelectedUser(it)
                             }
@@ -776,6 +799,53 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
 }
 
 
+@Composable
+fun EmailBoxes(users: List<User>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "You",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            color = Color.White,
+            fontSize = 12.sp
+        )
+        users.forEach { u ->
+            EmailBox(email = u.email)
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+    }
+}
+
+@Composable
+fun EmailBox(email: String) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFF6200EE).copy(alpha = 0.1f),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(all = 8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = email,
+                style = MaterialTheme.typography.bodyMedium,
+                fontSize = 14.sp,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
 
 
 

@@ -20,8 +20,10 @@ data class Event(
     val documentId: String = "",
     val startDate: String = timestampToString(startDay),
     val endDate: String = timestampToString(endDay),
+    val guest: Array<String> = emptyArray()
 
 )
+
 
 data class DottedEvent(
     val startDate: String? = "",

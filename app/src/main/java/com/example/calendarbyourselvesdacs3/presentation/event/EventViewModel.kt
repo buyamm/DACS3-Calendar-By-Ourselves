@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
+import com.example.calendarbyourselvesdacs3.data.repository.event.UserRepository
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.stringToLocalTime
 import com.example.calendarbyourselvesdacs3.domain.model.user.User
@@ -24,8 +25,9 @@ import javax.inject.Inject
 
 // EventViewModel này dành cho InteractWithEventScreen
 @HiltViewModel
-class EventViewModel @Inject constructor (
-    private val repository: EventRepository ,
+class EventViewModel @Inject constructor(
+    private val repository: EventRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EventUiState())
     val uiState = _uiState.asStateFlow()
@@ -76,43 +78,44 @@ class EventViewModel @Inject constructor (
         }
     }
 
-    fun onAddSelectedUser(user: User){
+    fun onAddSelectedUser(user: User) {
         _uiState.update { eventUiState ->
             val updatedList = eventUiState.selectedUserList + user
-            eventUiState.copy(selectedUserList = updatedList)
+            eventUiState.copy(selectedUserList = updatedList, searchQuery = "")
         }
     }
 
-    fun onRemoveSelectedUser(user: User){
+    fun onRemoveSelectedUser(user: User) {
         _uiState.update { eventUiState ->
             val updatedList = eventUiState.selectedUserList - user
             eventUiState.copy(selectedUserList = updatedList)
         }
     }
-    fun onQueryChange(searchQuery: String){
+
+    fun onQueryChange(searchQuery: String) {
         _uiState.update {
             it.copy(searchQuery = searchQuery)
         }
     }
 
-    fun updateUserListSearch(query: String){
+    fun updateUserListSearch(query: String) {
         loadUserBySearch(query)
     }
 
-    private fun loadUserBySearch(query: String = ""){
+    private fun loadUserBySearch(query: String = "") {
         _uiState.update {
             it.copy(searchQuery = query)
         }
 
-        if(query.isNotEmpty()){
+        if (query.isNotEmpty()) {
             getUsersJob?.cancel()
 
 
             getUsersJob = viewModelScope.launch {
-                repository.loadUserBySearch(
+                userRepository.loadUserBySearch(
                     queryValue = query
-                ).collect{
-                    _uiState.update {eventUiState ->
+                ).collect {
+                    _uiState.update { eventUiState ->
                         eventUiState.copy(userList = it)
                     }
                 }
@@ -129,8 +132,9 @@ class EventViewModel @Inject constructor (
         _uiState.update {
             it.copy(
                 isCheckAllDay = isCheckAllDay,
-                startTime = if(isCheckAllDay) stringToLocalTime(defaultStartTime) else LocalTime.now(),
-                endTime = if(isCheckAllDay) stringToLocalTime(defaultEndTime) else LocalTime.now().plusHours(1)
+                startTime = if (isCheckAllDay) stringToLocalTime(defaultStartTime) else LocalTime.now(),
+                endTime = if (isCheckAllDay) stringToLocalTime(defaultEndTime) else LocalTime.now()
+                    .plusHours(1)
             )
         }
     }
@@ -141,7 +145,7 @@ class EventViewModel @Inject constructor (
         }
     }
 
-    fun resetState(){
+    fun resetState() {
         _uiState.update {
             EventUiState()
         }
@@ -151,6 +155,8 @@ class EventViewModel @Inject constructor (
         val startDay = handleDateTimeToTimeStamp(_uiState.value.startDate, _uiState.value.startTime)
         val endDay = handleDateTimeToTimeStamp(_uiState.value.endDate, _uiState.value.endTime)
 
+        val arr = _uiState.value.selectedUserList.map { it.email }.toTypedArray()
+        val listUserId = _uiState.value.selectedUserList.map { it.uid }
         var event = Event(
             userId = user?.uid,
             title = _uiState.value.title,
@@ -159,12 +165,32 @@ class EventViewModel @Inject constructor (
             checkNotification = _uiState.value.isCheckNotification,
             startDay = startDay,
             endDay = endDay,
-            colorIndex = _uiState.value.colorIndex
+            colorIndex = _uiState.value.colorIndex,
+            guest = arr
         )
 
         repository.addEvent(event) { completed ->
             _uiState.update {
                 it.copy(eventAddedStatus = completed)
+            }
+        }
+
+        listUserId.forEach {uid ->
+            var newEvent = Event(
+                userId = uid,
+                title = _uiState.value.title,
+                description = _uiState.value.description,
+                checkAllDay = _uiState.value.isCheckAllDay,
+                checkNotification = _uiState.value.isCheckNotification,
+                startDay = startDay,
+                endDay = endDay,
+                colorIndex = _uiState.value.colorIndex,
+                guest = arr
+            )
+            repository.addEvent(newEvent) { completed ->
+                _uiState.update {
+                    it.copy(eventAddedStatus = completed)
+                }
             }
         }
     }
@@ -185,23 +211,22 @@ class EventViewModel @Inject constructor (
             colorIndex = _uiState.value.colorIndex
         )
 
-            repository.updateEvent(event) { completed ->
-                _uiState.update {
-                    it.copy(eventUpdatedStatus = completed)
-                }
+        repository.updateEvent(event) { completed ->
+            _uiState.update {
+                it.copy(eventUpdatedStatus = completed)
             }
+        }
 
     }
 
 
     fun getEvent(eventId: String) {
-            repository.getEvent(eventId = eventId, onError = {}) { event ->
-                if (event != null) {
-                    setEditField(event)
-                }
+        repository.getEvent(eventId = eventId, onError = {}) { event ->
+            if (event != null) {
+                setEditField(event)
             }
+        }
     }
-
 
 
     fun handleDateTimeToTimeStamp(date: LocalDate?, time: LocalTime?): Timestamp {
@@ -247,6 +272,15 @@ class EventViewModel @Inject constructor (
             onDate = { endDate = it },
             onTime = { endTime = it }
         )
+
+        val listUser: List<User> = event.guest.toList().map {email ->
+            var user: User? = null
+            userRepository.getUser(email, {}){
+                    user = it
+            }
+            user!!
+        }
+
         _uiState.update {
             it.copy(
                 title = event.title,
@@ -257,7 +291,8 @@ class EventViewModel @Inject constructor (
                 startDate = startDate!!,
                 endDate = endDate!!,
                 startTime = startTime!!,
-                endTime = endTime!!
+                endTime = endTime!!,
+                selectedUserList = listUser
             )
         }
     }

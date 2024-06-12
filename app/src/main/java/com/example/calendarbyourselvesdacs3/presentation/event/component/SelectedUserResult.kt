@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.domain.model.user.User
 
 @Composable
-fun SelectedUserResult(user: User, onDeleteUser: (user: User) -> Unit) {
+fun SelectedUserResult(user: User, onDeleteUser: (User) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
