@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.event.common
+package com.example.calendarbyourselvesdacs3.presentation.home.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -32,17 +32,15 @@ import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.formatTimeToString
-
-import com.example.calendarbyourselvesdacs3.ui.theme.AppColors
-import com.example.calendarbyourselvesdacs3.ui.theme.DefaultColor
-import com.example.calendarbyourselvesdacs3.ui.theme.GreenColor
+import com.example.calendarbyourselvesdacs3.presentation.event.component.splitTimeForLeftLine
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
-import com.example.calendarbyourselvesdacs3.ui.theme.RedColor
-import com.example.calendarbyourselvesdacs3.ui.theme.YellowColor
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 
 @Composable
-fun EventWithoutDescriptionComponent(event: Event, onEventClick: (eventId: String) -> Unit) {
+fun EventWithoutDescriptionComponent(
+    event: Event,
+    onEventClick: (eventId: String) -> Unit
+) {
     val taskColor = ColorUtil.colors[event.colorIndex].colorValue
     val appColors = LocalAppColors.current
 

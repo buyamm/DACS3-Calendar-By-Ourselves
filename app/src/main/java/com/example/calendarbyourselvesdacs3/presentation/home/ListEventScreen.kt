@@ -45,8 +45,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.event.getDayOfWeek
 import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
-import com.example.calendarbyourselvesdacs3.presentation.event.common.EventComponent
-import com.example.calendarbyourselvesdacs3.presentation.event.common.mySnackBar
+import com.example.calendarbyourselvesdacs3.presentation.event.component.EventComponent
+import com.example.calendarbyourselvesdacs3.presentation.event.component.mySnackBar
 import com.example.listeventui.presentation.component.ProfileHeaderComponent
 import com.example.listeventui.presentation.component.WelcomeMessageComponent
 import kotlinx.coroutines.launch
