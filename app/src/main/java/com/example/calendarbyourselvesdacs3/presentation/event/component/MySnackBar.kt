@@ -1,4 +1,4 @@
-package com.example.calendarbyourselvesdacs3.presentation.event.common
+package com.example.calendarbyourselvesdacs3.presentation.event.component
 
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
