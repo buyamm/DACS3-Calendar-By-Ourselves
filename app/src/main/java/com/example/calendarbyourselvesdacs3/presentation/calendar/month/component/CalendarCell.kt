@@ -24,12 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -37,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.calendarbyourselvesdacs3.common.date.listBetweenDates
 import com.example.calendarbyourselvesdacs3.data.remote.FirebaseRealtime
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.CalendarDate
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
@@ -91,6 +89,7 @@ fun CalendarCell(
             }
             .clickable { onCellClicked(date) }
     ) {
+
         Column(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -131,8 +130,8 @@ fun CalendarCell(
 
         LaunchedEffect(Unit, date.date) {
 
-            var check = homeViewModel.getEvent().find { date.date.toString() == it.startDate.toString() }
-            if(check?.startDate.toString() == date.date.toString()) {
+            var check = homeViewModel.getDateHaveEventVM().find { date.date.toString() == it}
+            if(check == date.date.toString()) {
                 stateColor = true
             }
             else {
@@ -140,7 +139,6 @@ fun CalendarCell(
             }
 
         }
-
 
     }
 }

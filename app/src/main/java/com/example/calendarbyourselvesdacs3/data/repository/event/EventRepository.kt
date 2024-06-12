@@ -70,10 +70,11 @@ class EventRepository {
             checkAllDay = event.checkAllDay,
             checkNotification = event.checkNotification,
             startDay = event.startDay,
-            startDate = timestampToString(event.startDay),
             endDay = event.endDay,
             colorIndex = event.colorIndex,
             documentId = documentId,
+            startDate = timestampToString(event.startDay),
+            endDate = timestampToString(event.endDay)
         )
 
         eventsRef
@@ -108,9 +109,10 @@ class EventRepository {
             "checkAllDay" to event.checkAllDay,
             "checkNotification" to event.checkNotification,
             "startDay" to event.startDay,
-            "startDate" to timestampToString(event.startDay),
             "endDay" to event.endDay,
-            "colorIndex" to event.colorIndex
+            "colorIndex" to event.colorIndex,
+            "startDate" to timestampToString(event.startDay),
+            "endDate" to timestampToString(event.endDay),
         )
 
         eventsRef
@@ -122,7 +124,7 @@ class EventRepository {
     }
 
 
-    fun loadEventByDate(userId: String, date: LocalDate): Flow<Resource<List<Event>>> =
+    fun loadEventByDate(userId: String, selectedDate: LocalDate): Flow<Resource<List<Event>>> =
         callbackFlow {
             var snapshotStateListener: ListenerRegistration? = null
 
@@ -130,7 +132,8 @@ class EventRepository {
                 snapshotStateListener = eventsRef
                     .orderBy("startDay")
                     .whereEqualTo("userId", userId)
-                    .whereEqualTo("startDate", localDateToString(date))
+                    .whereLessThanOrEqualTo("startDate", localDateToString(selectedDate))
+                    .whereGreaterThanOrEqualTo("endDate", localDateToString(selectedDate))
                     .addSnapshotListener { snapshot, e ->
                         val response = if (snapshot != null) {
                             val events = snapshot.toObjects(Event::class.java)
@@ -187,24 +190,34 @@ class EventRepository {
             }
         }
 
-//    suspend fun getDateHaveEvent(userId: String): String {
-//
-//        val querySnapshot: QuerySnapshot = eventsRef
-//            .whereEqualTo("userId", userId)
-//            .get()
-//            .await()
-//
-//        val tmp = querySnapshot.documents.firstOrNull()?.let {
-//            DottedEvent(
-//                startDate = it.getString("startDate").toString()
-//            )
-//        }
-//
-//
-//        return tmp.toString()
-//
-//    }
+
+    suspend fun getDateHaveEventRepo(userId: String): List<DottedEvent> {
+
+        try {
+            val querySnapshot: QuerySnapshot = eventsRef
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+
+            val data = querySnapshot.documents.map {
+                DottedEvent(
+                    startDate = it.getString("startDate"),
+                    endDate = it.getString("endDate")
+                )
+            }
+            return data
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+
+        return emptyList()
+
+
+    }
+
 }
+
+
 
 
 

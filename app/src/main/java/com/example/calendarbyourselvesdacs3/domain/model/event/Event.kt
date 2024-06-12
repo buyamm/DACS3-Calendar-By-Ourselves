@@ -15,15 +15,17 @@ data class Event(
     val checkAllDay: Boolean = false,
     val checkNotification: Boolean = false,
     val startDay: Timestamp = Timestamp.now(),
-    val startDate: String = timestampToString(startDay),
     val endDay: Timestamp = Timestamp.now(),
     val colorIndex: Int = 0,
     val documentId: String = "",
+    val startDate: String = timestampToString(startDay),
+    val endDate: String = timestampToString(endDay),
 
 )
 
 data class DottedEvent(
-    val startDate: String? = ""
+    val startDate: String? = "",
+    val endDate: String? = ""
 )
 
 fun timestampToString(timestamp: Timestamp): String{

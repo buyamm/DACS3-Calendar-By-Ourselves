@@ -326,7 +326,7 @@ fun dataAndTimePickerComponent(
     val endDate = uiState.endDate
     val endTime = uiState.endTime
 
-    var isEndDateAndTimeInvalid by remember {
+    var isEndDateInvalid by remember {
         mutableStateOf(false)
     }
 
@@ -335,10 +335,10 @@ fun dataAndTimePickerComponent(
     }
 
     LaunchedEffect(startDate, endDate, startTime, endTime) {
-        isEndDateAndTimeInvalid = endDate.isBefore(startDate)
+        isEndDateInvalid = endDate.isBefore(startDate)
         isEndTimeInvalid = endTime.isBefore(startTime)
 
-        if (isEndDateAndTimeInvalid || isEndTimeInvalid) {
+        if (isEndDateInvalid || (isEndTimeInvalid && isEndDateInvalid)) {
             checkDateValidToSave(false)
         } else {
             checkDateValidToSave(true)
@@ -384,7 +384,7 @@ fun dataAndTimePickerComponent(
 
                     },
                     fontSize = 17.sp,
-                    color = if (isEndDateAndTimeInvalid) Color.Red else Color.Black
+                    color = if (isEndDateInvalid) Color.Red else Color.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
@@ -395,7 +395,7 @@ fun dataAndTimePickerComponent(
                         Modifier.clickable { endTimeDialogState.show() }
                     },
                     fontSize = 17.sp,
-                    color = if (isEndDateAndTimeInvalid || isEndTimeInvalid) Color.Red else if (isCheckAllDay) Color.LightGray else Color.Black
+                    color = if (isEndDateInvalid || (isEndTimeInvalid && isEndDateInvalid)) Color.Red else if (isCheckAllDay) Color.LightGray else Color.Black
                 )
             }
         }

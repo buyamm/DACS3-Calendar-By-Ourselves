@@ -2,6 +2,8 @@ package com.example.calendarbyourselvesdacs3.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.calendarbyourselvesdacs3.common.date.getDatesBetween
+import com.example.calendarbyourselvesdacs3.common.room.converter.LocalDateConverter
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
 import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
@@ -24,6 +26,8 @@ class HomeViewModel @Inject constructor(
     ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
+    private var _dataLoaded = MutableStateFlow(false)
+    val dataLoaded = _dataLoaded.asStateFlow()
 
     private val user: FirebaseUser? = repository.user()
     private var getEventsJob: Job? = null
@@ -44,7 +48,7 @@ class HomeViewModel @Inject constructor(
                 if (user != null) {
                     repository.loadEventByDate(
                         userId = user.uid,
-                        date = date,
+                        selectedDate = date,
                     ).collect { result ->
                         result?.let {
                             val events = it.data // List<Event>
@@ -63,6 +67,7 @@ class HomeViewModel @Inject constructor(
                                     )
                                 }
                             }
+                            _dataLoaded.value = true
                         }
                     }
                 }
@@ -92,21 +97,27 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    suspend fun getEvent(): List<DottedEvent> {
+    fun resetDataLoaded() {
+        _dataLoaded.value = false
+    }
 
-        val firestore = FirebaseFirestore.getInstance()
-        val snapshot = firestore.collection("events")
-            .whereEqualTo("userId", user!!.uid)
-            .get()
-            .await()
-        val tmp = snapshot.documents?.map {
-            DottedEvent(
-                startDate = it.getString("startDate").toString()
-            )
+
+    suspend fun getDateHaveEventVM(): List<String> {
+
+        var data = repository.getDateHaveEventRepo(user!!.uid)
+        var tmpList = mutableListOf<String>()
+
+        for (i in data) {
+            for (j in getDatesBetween(LocalDateConverter.toDate(i.startDate)!!, LocalDateConverter.toDate(i.endDate)!!)) {
+                tmpList.add(j.toString())
+            }
         }
 
-        return tmp!!
+        return tmpList
 
     }
+
+
+
 
 }
