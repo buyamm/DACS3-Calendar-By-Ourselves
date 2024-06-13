@@ -6,6 +6,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 data class EventUiState(
+    val documentId: String = "",
     val title: String = "",
     val description: String = "",
     val colorIndex: Int = 0,
@@ -19,6 +20,7 @@ data class EventUiState(
     val userList: Resource<List<User>> = Resource.Loading(),
     val selectedUserList: List<User> = emptyList(),
     val searchQuery: String = "",
+    val isHost: Boolean = false,
 
     val eventAddedStatus: Boolean = false,
     val eventUpdatedStatus: Boolean = false,

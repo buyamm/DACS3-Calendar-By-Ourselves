@@ -20,7 +20,9 @@ data class Event(
     val documentId: String = "",
     val startDate: String = timestampToString(startDay),
     val endDate: String = timestampToString(endDay),
-    val guest: Array<String> = emptyArray()
+
+    val host: Map<String, String> = emptyMap(), // chứa email host và eventId của host
+    val guest: List<Map<String, String>> = emptyList() // chứa email khách và eventId khách
 
 )
 

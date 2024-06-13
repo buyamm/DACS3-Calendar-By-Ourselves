@@ -58,7 +58,10 @@ class EventRepository {
      * eventsRef.document(documentId).set(event): Truy cập tài liệu với ID vừa tạo và thiết lập dữ liệu của tài liệu đó bằng đối tượng event.
      *
      * */
-    fun addEvent(event: Event, onComplete: (Boolean) -> Unit) {
+    fun addEvent(
+        event: Event,
+        onComplete: (Boolean, newEventId: String) -> Unit,
+    ){
         val documentId = eventsRef.document().id
 
         var newEvent = Event(
@@ -73,6 +76,10 @@ class EventRepository {
             documentId = documentId,
             startDate = timestampToString(event.startDay),
             endDate = timestampToString(event.endDay),
+            host = mapOf(
+                "email" to user()?.email!!,
+                "eventId" to documentId
+            ),
             guest = event.guest
         )
 
@@ -80,7 +87,7 @@ class EventRepository {
             .document(documentId)
             .set(newEvent)
             .addOnCompleteListener {
-                onComplete.invoke(it.isSuccessful)
+                onComplete.invoke(it.isSuccessful, documentId)
             }
     }
 
@@ -93,6 +100,7 @@ class EventRepository {
                 onComplete.invoke(it.isSuccessful)
             }
     }
+
 
 
     /**
@@ -112,6 +120,7 @@ class EventRepository {
             "colorIndex" to event.colorIndex,
             "startDate" to timestampToString(event.startDay),
             "endDate" to timestampToString(event.endDay),
+            "guest" to event.guest
         )
 
         eventsRef

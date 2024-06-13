@@ -1,6 +1,5 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -56,7 +55,6 @@ fun CalendarMonthScreen(
 ) {
     val state by viewModel.collectAsState() // by thì không cần .value
     val uiState = homeViewModel.uiState.collectAsStateWithLifecycle().value
-    val dataLoaded = homeViewModel.dataLoaded.collectAsStateWithLifecycle().value
 
     var date by remember {
         mutableStateOf<LocalDate?>(null)

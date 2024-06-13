@@ -94,7 +94,9 @@ fun InteractWithTaskScreen(
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val isEventIdNotBlank = eventId.isNotBlank()
-    var isCanSave = false
+    var isCanSave by remember {
+        mutableStateOf(false)
+    }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -686,11 +688,17 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
         Box(modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                isSheetOpen = true
+                if(uiState.documentId == ""){
+                    isSheetOpen = true
+                }else{
+                    if(uiState.isHost){
+                        isSheetOpen = true
+                    }
+                }
             }
         ) {
             if(uiState.selectedUserList.isNotEmpty()){
-                EmailBoxes(users = uiState.selectedUserList)
+                EmailBoxes(users = uiState.selectedUserList, viewModel = viewModel)
             }else{
                 Text(
                     text = placeholderText,
@@ -728,7 +736,7 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
                         imageVector = Icons.Default.ArrowBackIosNew,
                         contentDescription = null,
                         modifier = Modifier
-                            .clickable { }
+                            .clickable { isSheetOpen = false }
                             .padding(all = 1.dp))
                 },
                 trailingIcon = {
@@ -787,8 +795,10 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
                         )
                     ) {
                         items(uiState.selectedUserList) { user ->
-                            SelectedUserResult(user = user) {
-                                viewModel.onRemoveSelectedUser(it)
+                            if(user.email != viewModel.user?.email){
+                                SelectedUserResult(user = user) {
+                                    viewModel.onRemoveSelectedUser(it)
+                                }
                             }
                         }
                     }
@@ -800,7 +810,7 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
 
 
 @Composable
-fun EmailBoxes(users: List<User>) {
+fun EmailBoxes(users: List<User>, viewModel: EventViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -813,11 +823,13 @@ fun EmailBoxes(users: List<User>) {
                 .background(Color.Gray, shape = RoundedCornerShape(8.dp))
                 .padding(horizontal = 8.dp, vertical = 4.dp),
             color = Color.White,
-            fontSize = 12.sp
+            fontSize = 16.sp
         )
         users.forEach { u ->
-            EmailBox(email = u.email)
-            Spacer(modifier = Modifier.height(4.dp))
+            if (u.email != viewModel.user?.email){
+                EmailBox(email = u.email)
+                Spacer(modifier = Modifier.height(4.dp))
+            }
         }
     }
 }
@@ -840,7 +852,7 @@ fun EmailBox(email: String) {
             Text(
                 text = email,
                 style = MaterialTheme.typography.bodyMedium,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 modifier = Modifier.weight(1f)
             )
         }
