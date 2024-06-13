@@ -28,7 +28,7 @@ class HomeViewModel @Inject constructor(
     private val user: FirebaseUser? = repository.user()
     private var getEventsJob: Job? = null
 
-    fun onChangeDate(date: LocalDate){
+    fun onChangeDate(date: LocalDate) {
         _uiState.update {
             it.copy(
                 clickedDate = date
@@ -71,26 +71,45 @@ class HomeViewModel @Inject constructor(
     }
 
     fun deleteEvent(event: Event) {
-        _uiState.update {
-            it.copy(deletedEvent = event)
-        }
-        repository.deleteEvent(eventId = event.documentId) { completed ->
+        viewModelScope.launch {
             _uiState.update {
-                it.copy(eventDeletedStatus = completed)
+                it.copy(deletedEvent = event)
             }
-        }
-    }
 
-    fun undoDeletedEvent() {
-        _uiState.value.deletedEvent?.let {
-            repository.addEvent(it) { completed, eventId ->
-                _uiState.update { homeUiState ->
-                    homeUiState.copy(eventUndoDeletedStatus = completed)
+            var oldGuest: List<Map<String, String>> = emptyList()
+            val eventt = repository.getEventTest(event.documentId)
+            if (eventt != null && eventt.guest != null) {
+                oldGuest = eventt.guest
+            }
+
+            oldGuest.forEach { map ->
+
+                map["eventId"]?.let {eventid ->
+                    repository.deleteEvent(eventid) { completed ->
+                        _uiState.update {homeUiState ->
+                            homeUiState.copy(eventDeletedStatus = completed)
+                        }
+                    }
+                }
+            }
+
+            repository.deleteEvent(eventId = event.documentId) { completed ->
+                _uiState.update {
+                    it.copy(eventDeletedStatus = completed)
                 }
             }
         }
     }
 
+//    fun undoDeletedEvent() {
+//        _uiState.value.deletedEvent?.let {
+//            repository.addEvent(it) { completed, eventId ->
+//                _uiState.update { homeUiState ->
+//                    homeUiState.copy(eventUndoDeletedStatus = completed)
+//                }
+//            }
+//        }
+//    }
 
 
     suspend fun getDateHaveEventVM(): List<String> {
@@ -99,7 +118,10 @@ class HomeViewModel @Inject constructor(
         var tmpList = mutableListOf<String>()
 
         for (i in data) {
-            for (j in getDatesBetween(LocalDateConverter.toDate(i.startDate)!!, LocalDateConverter.toDate(i.endDate)!!)) {
+            for (j in getDatesBetween(
+                LocalDateConverter.toDate(i.startDate)!!,
+                LocalDateConverter.toDate(i.endDate)!!
+            )) {
                 tmpList.add(j.toString())
             }
         }
@@ -107,8 +129,6 @@ class HomeViewModel @Inject constructor(
         return tmpList
 
     }
-
-
 
 
 }

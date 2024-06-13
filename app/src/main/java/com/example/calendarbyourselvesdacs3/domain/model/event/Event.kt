@@ -21,7 +21,7 @@ data class Event(
     val startDate: String = timestampToString(startDay),
     val endDate: String = timestampToString(endDay),
 
-    val host: Map<String, String> = emptyMap(), // chứa email host và eventId của host
+    val host: Map<String, String?> = emptyMap(), // chứa email host và eventId của host
     val guest: List<Map<String, String>> = emptyList() // chứa email khách và eventId khách
 
 )

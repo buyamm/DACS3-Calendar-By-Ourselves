@@ -158,41 +158,10 @@ class EventViewModel @Inject constructor(
 //        val listEmail = _uiState.value.selectedUserList.map { it.email } + user?.email
         val listEmail = _uiState.value.selectedUserList.map { it.email }
         val listUserId = _uiState.value.selectedUserList.map { it.uid }
-        var listGuestEventId: List<String> = emptyList()
+        val listGuestEventId: MutableList<String> = mutableListOf()
 
-//        the guests does priority first
-        listUserId.forEach { uid ->
-            var newEvent = Event(
-                userId = uid,
-                title = _uiState.value.title,
-                description = _uiState.value.description,
-                checkAllDay = _uiState.value.isCheckAllDay,
-                checkNotification = _uiState.value.isCheckNotification,
-                startDay = startDay,
-                endDay = endDay,
-                colorIndex = _uiState.value.colorIndex,
-                guest = listEmail.mapIndexed { index, email ->
-                    mapOf(
-                        "email" to email,
-                        "eventId" to ""
-                    )
-                }
-            )
-            repository.addEvent(newEvent) { complete, eventId ->
-                _uiState.update {
-                    it.copy(eventAddedStatus = complete)
-                }
-                listGuestEventId + eventId
-            }
-        }
-
-//        the last is host
-        var guest: List<Map<String, String>> = listEmail.mapIndexed { index, email ->
-            mapOf(
-                "email" to email,
-                "eventId" to listGuestEventId[index]
-            )
-        }
+//        Host
+        var eventIdHost = ""
         var event = Event(
             userId = user?.uid,
             title = _uiState.value.title,
@@ -202,13 +171,57 @@ class EventViewModel @Inject constructor(
             startDay = startDay,
             endDay = endDay,
             colorIndex = _uiState.value.colorIndex,
-            guest = guest
         )
 
-        repository.addEvent(event) { completed, eventId ->
+        eventIdHost = repository.addEventHost(event, listEmail) { completed ->
             _uiState.update {
                 it.copy(eventAddedStatus = completed)
             }
+        }
+
+//         guests
+        if (listUserId.isNotEmpty()) {
+            listUserId.forEach { uid ->
+                var newEvent = mapOf(
+                    "email" to user?.email,
+                    "eventId" to eventIdHost
+                )?.let {
+                    Event(
+                        userId = uid,
+                        title = _uiState.value.title,
+                        description = _uiState.value.description,
+                        checkAllDay = _uiState.value.isCheckAllDay,
+                        checkNotification = _uiState.value.isCheckNotification,
+                        startDay = startDay,
+                        endDay = endDay,
+                        colorIndex = _uiState.value.colorIndex,
+                        host = it
+                    )
+                }
+                if (newEvent != null) {
+                    val eventId = repository.addEventGuest(newEvent, listEmail) { complete ->
+                        _uiState.update {
+                            it.copy(eventAddedStatus = complete)
+                        }
+                    }
+                    listGuestEventId.add(eventId)
+                }
+            }
+        }
+
+
+//      update guest của host
+        if (listGuestEventId.isNotEmpty()) {
+            var guest: List<Map<String, String>> = listEmail.mapIndexed { index, email ->
+                mapOf(
+                    "email" to email,
+                    "eventId" to listGuestEventId[index]
+                )
+            }
+            repository.updateGuestOfHost(
+                eventId = eventIdHost,
+                guest = guest
+            )
         }
     }
 
@@ -221,69 +234,68 @@ class EventViewModel @Inject constructor(
 
             var oldGuest: List<Map<String, String>> = emptyList()
             val listEmail = _uiState.value.selectedUserList.map { it.email }
-            var listGuestEventId: List<String> = emptyList()
-            var canAddGuest = false
+            val listGuestEventId: MutableList<String> = mutableListOf()
 
 
-            repository.getEvent(eventId, {}) { event ->
-                if (event != null && event.guest != null) {
-                    oldGuest = event.guest
-                }
-                if (event?.host?.get("email") == user?.email) {
-                    canAddGuest = true
-                }
+
+            val eventt = repository.getEventTest(eventId)
+            if (eventt != null && eventt.guest != null) {
+                oldGuest = eventt.guest
             }
 
-            if (canAddGuest) {
-                //             Add new guest
-                listEmail.forEach { email ->
-                    if (oldGuest.any { it["email"] == email }) { // it: Map<String,String>
-                        val guestEventId = oldGuest.first{it["email"] == email}.get("eventId")
-                        listGuestEventId + guestEventId
-                    }else{
-                        val newUser = userRepository.getUser(email)
-                        var newEvent = Event(
-                            userId = newUser?.uid,
-                            title = _uiState.value.title,
-                            description = _uiState.value.description,
-                            checkAllDay = _uiState.value.isCheckAllDay,
-                            checkNotification = _uiState.value.isCheckNotification,
-                            startDay = startDay,
-                            endDay = endDay,
-                            colorIndex = _uiState.value.colorIndex,
-                            guest = listEmail.mapIndexed { index, email ->
-                                mapOf(
-                                    "email" to email,
-                                    "eventId" to ""
-                                )
-                            }
-                        )
-                        repository.addEvent(newEvent) { completed, eventId ->
-                            _uiState.update {
-                                it.copy(eventAddedStatus = completed)
-                            }
-                            listGuestEventId + eventId
+
+//             Add new guest
+            listEmail.forEach { email ->
+//                (lấy ra eventId của thằng cũ)
+                if (oldGuest.any { it["email"] == email }) { // it: Map<String,String>
+                    val guestEventId = oldGuest.first { it["email"] == email }.get("eventId")
+                    if (guestEventId != null) {
+                        listGuestEventId.add(guestEventId)
+                    }
+                } else {
+                    val newUser = userRepository.getUser(email)
+                    var newEvent = Event(
+                        userId = newUser?.uid,
+                        title = _uiState.value.title,
+                        description = _uiState.value.description,
+                        checkAllDay = _uiState.value.isCheckAllDay,
+                        checkNotification = _uiState.value.isCheckNotification,
+                        startDay = startDay,
+                        endDay = endDay,
+                        colorIndex = _uiState.value.colorIndex,
+                        guest = listEmail.mapIndexed { index, email ->
+                            mapOf(
+                                "email" to email,
+                                "eventId" to ""
+                            )
+                        }
+                    )
+                    val eventId = repository.addEventGuest(newEvent, listEmail) { completed ->
+                        _uiState.update {
+                            it.copy(eventAddedStatus = completed)
                         }
                     }
+                    listGuestEventId.add(eventId)
                 }
+            }
 
 
 //             Delete old guest not in selectedUserList
-                oldGuest.forEach { map ->
-                    if (!listEmail.contains(map["email"])) {
-                        map["eventId"]?.let { eventId ->
-                            repository.deleteEvent(eventId) { completed ->
-                                _uiState.update {
-                                    it.copy(eventAddedStatus = completed)
-                                }
+            oldGuest.forEach { map ->
+                if (!listEmail.contains(map["email"])) {
+                    map["eventId"]?.let { eventId ->
+                        repository.deleteEvent(eventId) { completed ->
+                            _uiState.update {
+                                it.copy(eventAddedStatus = completed)
                             }
                         }
                     }
                 }
             }
 
+
 //             Update host
-            val event = Event(
+            val eventUpdate = Event(
                 documentId = eventId,
                 title = _uiState.value.title,
                 description = _uiState.value.description,
@@ -299,10 +311,36 @@ class EventViewModel @Inject constructor(
                     )
                 }
             )
-            repository.updateEvent(event) { completed ->
+            repository.updateEvent(eventUpdate) { completed ->
                 _uiState.update {
                     it.copy(eventUpdatedStatus = completed)
                 }
+            }
+
+//            update những guest còn lại
+            listGuestEventId.forEach { eventId ->
+                val eventUpdate = Event(
+                    documentId = eventId,
+                    title = _uiState.value.title,
+                    description = _uiState.value.description,
+                    checkAllDay = _uiState.value.isCheckAllDay,
+                    checkNotification = _uiState.value.isCheckNotification,
+                    startDay = startDay,
+                    endDay = endDay,
+                    colorIndex = _uiState.value.colorIndex,
+                    guest = listEmail.mapIndexed { index, email ->
+                        mapOf(
+                            "email" to email,
+                            "eventId" to listGuestEventId[index]
+                        )
+                    }
+                )
+                repository.updateEvent(eventUpdate) { completed ->
+                    _uiState.update {
+                        it.copy(eventUpdatedStatus = completed)
+                    }
+                }
+
             }
 
         }
