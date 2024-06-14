@@ -24,8 +24,20 @@ data class Event(
 )
 
 data class DottedEvent(
+    val title: String = "",
     val startDate: String? = "",
-    val endDate: String? = ""
+    val endDate: String? = "",
+    var startDay: Timestamp = Timestamp.now(),
+    var endDay: Timestamp = Timestamp.now(),
+    val checkNotification: Boolean = false
+)
+
+data class Quintuple<A, B, C, D, E>(
+    val time: A,
+    val requestCode: B,
+    val title: C,
+    val desc: D,
+    val checkNotification: E
 )
 
 fun timestampToString(timestamp: Timestamp): String{

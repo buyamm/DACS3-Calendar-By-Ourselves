@@ -10,7 +10,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -28,8 +30,9 @@ import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.google.android.gms.auth.api.identity.Identity
 import kotlinx.coroutines.launch
 
-
-@SuppressLint("StateFlowValueCalledInComposition", "ComposableDestinationInComposeScope")
+@SuppressLint("StateFlowValueCalledInComposition", "ComposableDestinationInComposeScope",
+    "UnrememberedMutableState"
+)
 @Composable
 fun NavGraph(
     signInViewModel: SignInViewModel,
@@ -101,26 +104,6 @@ fun NavGraph(
                 }
             )
         }
-//        composable(Screen.HomeScreen.name) {
-//            HomeScreen(
-//                userData = googleAuthUiClient.getSignedInUser(),
-//                onSignOut = {
-//                    coroutineScope.launch {
-//                        googleAuthUiClient.signOut()
-//                        Toast.makeText(
-//                            context,
-//                            "Signed out",
-//                            Toast.LENGTH_LONG
-//                        ).show()
-//
-//                        navController.popBackStack()
-//                    }
-//                },
-//                onSearchClick = {
-//                    navController.navigate(route = Screen.SearchScreen.name)
-//                }
-//            )
-//        }
 
 
 //        calendar - home page
@@ -144,7 +127,6 @@ fun NavGraph(
                             "Signed out",
                             Toast.LENGTH_LONG
                         ).show()
-
                         navController.popBackStack()
                     }
                 },
