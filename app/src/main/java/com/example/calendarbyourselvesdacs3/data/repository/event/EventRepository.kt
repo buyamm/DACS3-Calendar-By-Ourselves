@@ -1,5 +1,6 @@
 package com.example.calendarbyourselvesdacs3.data.repository.event
 
+import android.util.Log
 import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
@@ -14,6 +15,7 @@ import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.auth.User
 import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.getField
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -202,7 +204,11 @@ class EventRepository {
             val data = querySnapshot.documents.map {
                 DottedEvent(
                     startDate = it.getString("startDate"),
-                    endDate = it.getString("endDate")
+                    endDate = it.getString("endDate").toString(),
+                    startDay = it.getTimestamp("startDay")!!,
+                    endDay = it.getTimestamp("endDay")!!,
+                    title = it.getString("title")!!,
+                    checkNotification = it.get("checkNotification") as Boolean
                 )
             }
             return data

@@ -33,19 +33,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.calendarbyourselvesdacs3.common.date.listBetweenDates
-import com.example.calendarbyourselvesdacs3.data.remote.FirebaseRealtime
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.CalendarDate
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
-import com.example.calendarbyourselvesdacs3.presentation.calendar.month.CalendarMonthViewModel
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
-import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
 import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
+
 
 @Composable
 fun CalendarCell(
@@ -59,8 +52,6 @@ fun CalendarCell(
 ) {
     val appColors = LocalAppColors.current
     var stateColor by remember { mutableStateOf(false) }
-
-
 
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -139,8 +130,9 @@ fun CalendarCell(
             }
 
         }
-
     }
+
 }
+
 
 
