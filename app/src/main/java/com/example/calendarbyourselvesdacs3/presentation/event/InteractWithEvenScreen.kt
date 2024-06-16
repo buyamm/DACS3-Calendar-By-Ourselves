@@ -19,44 +19,66 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.AddComment
+import androidx.compose.material.icons.outlined.CoPresent
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.WatchLater
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.event.PairColor
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
+import com.example.calendarbyourselvesdacs3.domain.model.user.User
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
+import com.example.calendarbyourselvesdacs3.presentation.event.component.SelectedUserResult
+import com.example.calendarbyourselvesdacs3.presentation.event.component.UserSearchResult
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -76,28 +98,61 @@ fun InteractWithTaskScreen(
     onNavigateToHomePage: () -> Unit,
     eventId: String = "",
     date: LocalDate? = null,
+    userData: UserData,
     viewModel: EventViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val isEventIdNotBlank = eventId.isNotBlank()
-    var isCanSave = true
+    var isCanSave by remember {
+        mutableStateOf(false)
+    }
+    var isInitialComposition by remember { mutableStateOf(true) }
+    var isHost by remember {
+        mutableStateOf(false) // moi vo false
+    }
+
+
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+
 
     LaunchedEffect(Unit) {
         if (isEventIdNotBlank) {
-            viewModel.getEvent(eventId = eventId)
+            viewModel.getEvent(eventId = eventId, userData = userData)
         } else {
             viewModel.resetState()
         }
     }
 
-    val tmp = uiState.eventAddedStatus
+//    LaunchedEffect(isInitialComposition) {
+//        if (isInitialComposition) {
+//            isInitialComposition = false
+//        } else {
+//            if (uiState.hostEmail !== emailHost) {
+//                mySnackBar(
+//                    scope = scope,
+//                    snackBarHostState = snackbarHostState,
+//                    msg = "Only the host can change this event",
+//                    actionLabel = "",
+//                    onAction = {
+//                    }
+//                )
+//            }
+//        }
+//
+//    }
+
+
 
     Scaffold(
-//        modifier = Modifier.nestedScroll(TopAppBarDefaults.enterAlwaysScrollBehavior().nestedScrollConnection),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
-//                scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(),
                 title = { Text(text = "") },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -113,17 +168,17 @@ fun InteractWithTaskScreen(
                 },
                 actions = {
                     Box(
-                        modifier = if (isCanSave) {
+                        modifier = if (isCanSave && (uiState.hostEmail == userData.email || !isEventIdNotBlank)) {
                             Modifier
                                 .requiredHeight(40.dp)
                                 .requiredWidth(80.dp)
                                 .clickable {
                                     if (isEventIdNotBlank) {
-                                        viewModel.updateEvent(eventId)
+                                        viewModel.updateEvent(eventId, userData)
                                         viewModel.resetState()
                                         onBack()
                                     } else {
-                                        viewModel.addEvent()
+                                        viewModel.addEvent(userData)
                                         viewModel.resetState()
                                         onNavigateToHomePage()
                                     }
@@ -141,6 +196,7 @@ fun InteractWithTaskScreen(
                                 .requiredHeight(40.dp)
                                 .requiredWidth(80.dp)
                                 .background(Color.Transparent)
+
                         },
                         contentAlignment = Alignment.Center
 
@@ -149,7 +205,9 @@ fun InteractWithTaskScreen(
                             text = "Save",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (isCanSave) Color(0xFF596FB7) else Color.LightGray
+                            color = if (isCanSave && (uiState.hostEmail == userData.email || !isEventIdNotBlank)) Color(
+                                0xFF596FB7
+                            ) else Color.LightGray
                         )
                     }
                 },
@@ -163,7 +221,14 @@ fun InteractWithTaskScreen(
                 .padding(it), contentPadding = PaddingValues(all = 16.dp)
         ) {
             item {
-                EditFieldTitleComponent(uiState, viewModel)
+                EditFieldTitleComponent(
+                    uiState,
+                    { b: Boolean ->
+                        isCanSave = b
+                    },
+                    focusManager,
+                    viewModel
+                )
                 Spacer(modifier = Modifier.height(30.dp))
             }
             item {
@@ -179,7 +244,7 @@ fun InteractWithTaskScreen(
 
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                descriptionComponent(uiState, viewModel)
+                descriptionComponent(uiState, focusManager, viewModel)
                 Spacer(modifier = Modifier.height(24.dp))
                 Divider(
                     modifier = Modifier
@@ -197,6 +262,18 @@ fun InteractWithTaskScreen(
                         .height(2.dp)
                 )
             }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                userData.email?.let { it1 -> addGuestComponent(uiState, it1, viewModel) }
+                Spacer(modifier = Modifier.height(24.dp))
+                Divider(
+                    modifier = Modifier
+                        .fillMaxWidth(1f)
+                        .height(2.dp)
+                )
+            }
+
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 pickColorComponent(uiState, viewModel)
@@ -208,7 +285,20 @@ fun InteractWithTaskScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditFieldTitleComponent(uiState: EventUiState, viewModel: EventViewModel) {
+fun EditFieldTitleComponent(
+    uiState: EventUiState,
+    checkDateValidToSave: (Boolean) -> Unit,
+    focusManager: FocusManager,
+    viewModel: EventViewModel
+) {
+
+    LaunchedEffect(uiState.title) {
+        if (uiState.title.isBlank()) {
+            checkDateValidToSave(false)
+        } else {
+            checkDateValidToSave(true)
+        }
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -227,6 +317,11 @@ fun EditFieldTitleComponent(uiState: EventUiState, viewModel: EventViewModel) {
                 containerColor = Color.Transparent
             ),
             textStyle = TextStyle(fontSize = 20.sp),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    focusManager.clearFocus()
+                }
+            ),
             modifier = Modifier.fillMaxWidth(1f)
         )
     }
@@ -268,6 +363,8 @@ fun checkAllDayComponent(
                 }
             )
         }
+
+
     }
     Spacer(modifier = Modifier.height(20.dp))
     dataAndTimePickerComponent(
@@ -341,7 +438,7 @@ fun dataAndTimePickerComponent(
         isEndDateInvalid = endDate.isBefore(startDate)
         isEndTimeInvalid = endTime.isBefore(startTime)
 
-        if (isEndDateInvalid || (isEndTimeInvalid && isEndDateInvalid)) {
+        if (isEndDateInvalid || (isEndTimeInvalid && endDate.isEqual(startDate))) {
             checkDateValidToSave(false)
         } else {
             checkDateValidToSave(true)
@@ -587,12 +684,13 @@ fun ColorPickerDialog(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-//@Preview
-fun descriptionComponent(uiState: EventUiState, viewModel: EventViewModel) {
+fun descriptionComponent(
+    uiState: EventUiState,
+    focusManager: FocusManager,
+    viewModel: EventViewModel
+) {
 
-    var isPlaceholderVisible by remember { mutableStateOf(true) }
     val placeholderText = "Add description content"
 
     Row(
@@ -623,6 +721,11 @@ fun descriptionComponent(uiState: EventUiState, viewModel: EventViewModel) {
                     viewModel.onDescChange(it)
                 },
                 textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                    }
+                ),
                 modifier = Modifier
                     .fillMaxSize(1f),
             )
@@ -631,7 +734,227 @@ fun descriptionComponent(uiState: EventUiState, viewModel: EventViewModel) {
 }
 
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun addGuestComponent(uiState: EventUiState, emailHost: String, viewModel: EventViewModel) {
+    val placeholderText = "Add guest"
+    var isSheetOpen by rememberSaveable {
+        mutableStateOf(false)
+    }
+    val sheetState = rememberModalBottomSheetState()
 
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.CoPresent,
+            contentDescription = null,
+            tint = Color(0xFF52575D),
+            modifier = Modifier.width(50.dp)
+        )
+
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                if (uiState.documentId == "") {
+                    isSheetOpen = true
+                } else {
+                    if (uiState.hostEmail == emailHost) {
+                        isSheetOpen = true
+                    }
+                }
+            }
+        ) {
+            if (uiState.selectedUserList.isNotEmpty()) {
+                EmailBoxes(
+                    users = uiState.selectedUserList,
+                    emailHost = emailHost,
+                    uiState = uiState,
+                    viewModel = viewModel
+                )
+            } else {
+                Text(
+                    text = placeholderText,
+                    fontSize = 20.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.align(Alignment.CenterStart)
+                )
+            }
+        }
+    }
+
+    if (isSheetOpen) {
+        ModalBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = { isSheetOpen = false }
+        ) {
+            var active by remember {
+                mutableStateOf(true)
+            }
+
+            SearchBar(
+                query = uiState.searchQuery,
+                onQueryChange = {
+                    viewModel.onQueryChange(it)
+                    viewModel.updateUserListSearch(it)
+                },
+                onSearch = { }, // hanh dong nhan nut tim kiem tren ban phim
+                active = active,
+                onActiveChange = { active = it },
+                placeholder = {
+                    Text(text = "Add guest")
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBackIosNew,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clickable { isSheetOpen = false }
+                            .padding(all = 1.dp))
+                },
+                trailingIcon = {
+                    Text(
+                        text = "Done",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF596FB7),
+                        modifier = Modifier.clickable {
+                            isSheetOpen = false
+                        }
+                    )
+                },
+            ) {
+                if (uiState.searchQuery.isNotEmpty()) {
+                    when (uiState.userList) {
+                        is Resource.Error -> {
+                            uiState.userList.throwable?.message?.let { it1 ->
+                                Text(
+                                    text = it1,
+                                    color = Color.Red
+                                )
+                            }
+                        }
+
+                        is Resource.Loading -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .wrapContentSize(align = Alignment.Center)
+                            )
+                        }
+
+                        is Resource.Success -> {
+                            LazyColumn(
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    top = 16.dp,
+                                    bottom = 16.dp
+                                )
+                            ) {
+                                items(uiState.userList.data ?: emptyList()) { user ->
+                                    UserSearchResult(user = user) {
+                                        viewModel.onAddSelectedUser(user)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            top = 16.dp,
+                            bottom = 16.dp
+                        )
+                    ) {
+                        items(uiState.selectedUserList) { user ->
+                            if (user.email != emailHost) {
+                                SelectedUserResult(user = user) {
+                                    viewModel.onRemoveSelectedUser(it)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun EmailBoxes(
+    users: List<User>,
+    emailHost: String,
+    uiState: EventUiState,
+    viewModel: EventViewModel
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        if (uiState.hostEmail == emailHost) {
+            Text(
+                text = "You",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                color = Color.White,
+                fontSize = 16.sp
+            )
+            users.forEach { u ->
+                if (u.email != emailHost) {
+                    EmailBox(email = u.email)
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+        } else {
+            Text(
+                text = if (uiState.hostEmail != "") uiState.hostEmail else "ban",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                color = Color.White,
+                fontSize = 16.sp
+            )
+            users.forEach { u ->
+                EmailBox(email = u.email)
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+        }
+
+    }
+}
+
+@Composable
+fun EmailBox(email: String) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFF6200EE).copy(alpha = 0.1f),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(all = 8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = email,
+                style = MaterialTheme.typography.bodyMedium,
+                fontSize = 16.sp,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
 
 
 

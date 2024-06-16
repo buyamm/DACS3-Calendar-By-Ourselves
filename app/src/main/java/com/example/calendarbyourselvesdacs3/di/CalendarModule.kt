@@ -1,6 +1,7 @@
 package com.example.calendarbyourselvesdacs3.di
 
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
+import com.example.calendarbyourselvesdacs3.data.repository.event.UserRepository
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.GetMonthDays
 import dagger.Module
 import dagger.Provides
@@ -22,6 +23,11 @@ class CalendarModule {
         return EventRepository()
     }
 
+    @Provides
+    @Singleton
+    fun provideUserRepository(): UserRepository {
+        return UserRepository()
+    }
 
 
 //    @Provides

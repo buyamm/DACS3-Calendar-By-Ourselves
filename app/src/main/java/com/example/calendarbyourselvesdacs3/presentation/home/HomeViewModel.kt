@@ -11,7 +11,7 @@ import com.example.calendarbyourselvesdacs3.common.room.converter.LocalDateConve
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.Quintuple
-import com.google.firebase.auth.FirebaseUser
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,13 +28,12 @@ class HomeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
-    private var _dataLoaded = MutableStateFlow(false)
-    val dataLoaded = _dataLoaded.asStateFlow()
 
-    private val user: FirebaseUser? = repository.user()
+
+
     private var getEventsJob: Job? = null
 
-    fun onChangeDate(date: LocalDate){
+    fun onChangeDate(date: LocalDate) {
         _uiState.update {
             it.copy(
                 clickedDate = date
@@ -42,14 +41,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun loadEventsByDate(date: LocalDate) {
+    fun loadEventsByDate(date: LocalDate, userData: UserData) {
         if (date != null) {
             getEventsJob?.cancel()
 
             getEventsJob = viewModelScope.launch {
-                if (user != null) {
+                if (userData != null) {
                     repository.loadEventByDate(
-                        userId = user.uid,
+                        userId = userData.userId,
                         selectedDate = date,
                     ).collect { result ->
                         result?.let {
@@ -69,7 +68,6 @@ class HomeViewModel @Inject constructor(
                                     )
                                 }
                             }
-                            _dataLoaded.value = true
                         }
                     }
                 }
@@ -77,42 +75,106 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun deleteEvent(event: Event) {
-        _uiState.update {
-            it.copy(deletedEvent = event)
-        }
-        repository.deleteEvent(eventId = event.documentId) { completed ->
+    fun deleteEvent(event: Event, userData: UserData) {
+        viewModelScope.launch {
             _uiState.update {
-                it.copy(eventDeletedStatus = completed)
+                it.copy(deletedEvent = event)
             }
-        }
-    }
 
-    fun undoDeletedEvent() {
-        _uiState.value.deletedEvent?.let {
-            repository.addEvent(it) { completed ->
-                _uiState.update { homeUiState ->
-                    homeUiState.copy(eventUndoDeletedStatus = completed)
+            var oldGuest: List<Map<String, String>> = emptyList()
+            var hostEventId = ""
+            val eventt = repository.getEventTest(event.documentId)
+            if (eventt != null && eventt.guest != null) {
+                oldGuest = eventt.guest
+                hostEventId = event.host["eventId"].toString()
+            }
+
+            val emailListExceptCurrentUser = oldGuest.filter {
+                it["email"] != userData?.email
+            }.map {
+                it["email"] ?: ""
+            }
+
+            val eventIdListExceptCurrentUser = oldGuest.filter {
+                it["email"] != userData?.email
+            }.map {
+                it["eventId"] ?: ""
+            }
+
+            var newGuest: List<Map<String, String>> =
+                emailListExceptCurrentUser.mapIndexed { index, email ->
+                    mapOf(
+                        "email" to email,
+                        "eventId" to eventIdListExceptCurrentUser[index]
+                    )
                 }
+
+//            Là chủ thì xóa hết
+            if (userData?.email == eventt?.host?.get("email")) {
+                oldGuest.forEach { map ->
+                    map["eventId"]?.let { eventid ->
+                        repository.deleteEvent(eventid) { completed ->
+                            _uiState.update { homeUiState ->
+                                homeUiState.copy(eventDeletedStatus = completed)
+                            }
+                        }
+                    }
+                }
+
+                repository.deleteEvent(eventId = event.documentId) { completed ->
+                    _uiState.update {
+                        it.copy(eventDeletedStatus = completed)
+                    }
+                }
+            } else { // là khách thì xóa khách
+                oldGuest.forEach { map ->
+                    if (map["email"] == userData?.email) { // xóa event khách
+                        map["eventId"]?.let { eventid ->
+                            repository.deleteEvent(eventid) { completed ->
+                                _uiState.update { homeUiState ->
+                                    homeUiState.copy(eventDeletedStatus = completed)
+                                }
+                            }
+                        }
+                    } else {
+//        xóa khách ra khỏi các event thì:
+//        1. Xóa khách từ các khách khác
+                        map["eventId"]?.let {
+                            repository.updateGuestOfHost(it, newGuest)
+                        }
+                    }
+                }
+                
+//                2. Xóa khách trong host
+                repository.updateGuestOfHost(hostEventId, newGuest)
             }
         }
     }
 
+//    fun undoDeletedEvent() {
+//        _uiState.value.deletedEvent?.let {
+//            repository.addEvent(it) { completed, eventId ->
+//                _uiState.update { homeUiState ->
+//                    homeUiState.copy(eventUndoDeletedStatus = completed)
+//                }
+//            }
+//        }
+//    }
 
-    fun resetDataLoaded() {
-        _dataLoaded.value = false
-    }
 
-
-    suspend fun getDateHaveEventVM(): List<String> {
-
-        var data = repository.getDateHaveEventRepo(user!!.uid)
+    suspend fun getDateHaveEventVM(userData: UserData): List<String> {
+        var data = userData?.userId?.let { repository.getDateHaveEventRepo(it) }
 
         var tmpList = mutableListOf<String>()
 
-        for (i in data) {
-            for (j in getDatesBetween(LocalDateConverter.toDate(i.startDate)!!, LocalDateConverter.toDate(i.endDate)!!)) {
-                tmpList.add(j.toString())
+        if (data != null) {
+            for (i in data) {
+                for (j in getDatesBetween(
+                    LocalDateConverter.toDate(i.startDate)!!,
+                    LocalDateConverter.toDate(i.endDate)!!
+                )) {
+                    tmpList.add(j.toString())
+                }
             }
         }
 
@@ -120,9 +182,9 @@ class HomeViewModel @Inject constructor(
 
     }
 
-    suspend fun getTimeNotification(): List<Quintuple<String, String, String, String, Boolean>> {
+    suspend fun getTimeNotification(userData: UserData): List<Quintuple<String, String, String, String, Boolean>> {
 
-        var data = repository.getDateHaveEventRepo(user!!.uid)
+        var data = repository.getDateHaveEventRepo(userData.userId)
 
         var diffTimeList = mutableListOf<Quintuple<String, String, String, String, Boolean>>()
 

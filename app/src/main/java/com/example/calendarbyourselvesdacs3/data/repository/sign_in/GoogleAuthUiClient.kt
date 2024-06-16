@@ -23,6 +23,7 @@ class GoogleAuthUiClient(
 
     private val auth = Firebase.auth
 
+
     suspend fun signIn(): IntentSender?{
         val result = try {
             oneTapClient.beginSignIn(
@@ -51,7 +52,8 @@ class GoogleAuthUiClient(
                     UserData(
                         userId = uid,
                         username = displayName,
-                        profilPictureUrl  = photoUrl?.toString()
+                        profilPictureUrl  = photoUrl?.toString(),
+                        email = email
                     )
                 },
                 errorMessage = null
@@ -80,6 +82,14 @@ class GoogleAuthUiClient(
         try {
             oneTapClient.signOut().await()
             auth.signOut()
+            val user = auth.currentUser
+            if (user != null) {
+                // Nếu vẫn có người dùng, in ra thông tin người dùng để debug
+                println("User still signed in: ${user.email}")
+            } else {
+                // Người dùng đã được đăng xuất hoàn toàn
+                println("User successfully signed out.")
+            }
         }catch (e: Exception){
             e.printStackTrace()
             if (e is CancellationException) throw e
@@ -90,8 +100,11 @@ class GoogleAuthUiClient(
         UserData(
             userId = uid,
             username = displayName,
-            profilPictureUrl = photoUrl?.toString()
+            profilPictureUrl = photoUrl?.toString(),
+            email = email
         )
     }
+
+
 
 }

@@ -1,6 +1,5 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -66,8 +65,10 @@ fun CalendarMonthScreen(
 
     LaunchedEffect(Unit, date) {
         date?.let {
-            homeViewModel.onChangeDate(date = it!!)
-            homeViewModel.loadEventsByDate(date = it)
+            homeViewModel.onChangeDate(date = date!!)
+            if (userData != null) {
+                homeViewModel.loadEventsByDate(date = it, userData)
+            }
         }
     }
 
@@ -108,13 +109,16 @@ fun CalendarMonthScreen(
                 .fillMaxSize(),
         ) {
             if (state.monthDays != null) {
-                Calendar(
-                    date = state.currentDate,
-                    monthDays = state.monthDays!!,
-                    onPreviousMonth = { viewModel.onPreviousMonth() },
-                    onNextMonth = { viewModel.onNextMonth() },
-                    onDateClicked = { date -> viewModel.onDateClicked(date) },
-                )
+                if (userData != null) {
+                    Calendar(
+                        date = state.currentDate,
+                        monthDays = state.monthDays!!,
+                        onPreviousMonth = { viewModel.onPreviousMonth() },
+                        onNextMonth = { viewModel.onNextMonth() },
+                        onDateClicked = { date -> viewModel.onDateClicked(date) },
+                        userData = userData
+                    )
+                }
             }
             Divider(modifier = Modifier.fillMaxWidth(1f), color = Color.LightGray, thickness = 1.dp)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -202,6 +206,7 @@ private fun Calendar(
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onDateClicked: (LocalDate) -> Unit,
+    userData: UserData
 ) {
     CalendarView(
         modifier = Modifier
@@ -212,6 +217,7 @@ private fun Calendar(
         onCellClicked = { cellDate -> onDateClicked(cellDate.date) },
         renderCell = { cellDate ->
         },
+        userData = userData
     )
     Row(
         modifier = Modifier

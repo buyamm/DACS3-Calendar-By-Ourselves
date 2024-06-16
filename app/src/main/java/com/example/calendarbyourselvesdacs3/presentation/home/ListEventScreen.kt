@@ -75,7 +75,7 @@ fun ListEventScreen(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        viewModel.loadEventsByDate(date = date)
+        viewModel.loadEventsByDate(date = date, userData = userData)
     }
 
     when (uiState.eventList) {
@@ -177,7 +177,7 @@ fun ListEventScreen(
                                                     confirmButton = {
                                                         TextButton(
                                                             onClick = {
-                                                                viewModel.deleteEvent(event)
+                                                                viewModel.deleteEvent(event, userData)
                                                                 scope.launch { dismissState.reset() }
                                                                 openDialog = false
                                                                 mySnackBar(
@@ -185,7 +185,9 @@ fun ListEventScreen(
                                                                     snackBarHostState = snackbarHostState,
                                                                     msg = "Deleted successfully!",
                                                                     actionLabel = "UNDO",
-                                                                    onAction = { viewModel.undoDeletedEvent() }
+                                                                    onAction = {
+//                                                                        viewModel.undoDeletedEvent()
+                                                                    }
                                                                 )
                                                             }
                                                         ) {

@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.example.calendarbyourselvesdacs3.common.date.converToRequestCode
+import com.example.calendarbyourselvesdacs3.data.repository.sign_in.GoogleAuthUiClient
 import com.example.calendarbyourselvesdacs3.domain.model.event.Quintuple
 import com.example.calendarbyourselvesdacs3.presentation.alarm.MyAlarm
 import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
@@ -34,6 +35,7 @@ import com.example.calendarbyourselvesdacs3.presentation.navigation.NavGraph
 import com.example.calendarbyourselvesdacs3.presentation.sign_in.SignInViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.CalendarByOurselvesDACS3Theme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.android.gms.auth.api.identity.Identity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -46,10 +48,16 @@ class MainActivity : ComponentActivity() {
     private val signInViewModel by viewModels<SignInViewModel>()
     private val eventViewModel  by viewModels<EventViewModel>()
     private val homeViewModel: HomeViewModel by viewModels()
+    private lateinit var googleAuthUiClient: GoogleAuthUiClient
 
     @SuppressLint("LogNotTimber")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        googleAuthUiClient = GoogleAuthUiClient(
+            context = applicationContext,
+            oneTapClient = Identity.getSignInClient(applicationContext)
+        )
+        val userData = googleAuthUiClient.getSignedInUser()
 
         setContent {
 
@@ -80,8 +88,14 @@ class MainActivity : ComponentActivity() {
 
                         while (true){
                             delay(10000)
-                            Log.d("=============", homeViewModel.getTimeNotification().toString())
-                            setAlarmsForEvents(homeViewModel.getTimeNotification())
+                            userData?.let { homeViewModel.getTimeNotification(it).toString() }?.let {
+                                Log.d("=============",
+                                    it
+                                )
+                            }
+
+                            userData?.let { homeViewModel.getTimeNotification(it) }
+                                ?.let { setAlarmsForEvents(it) }
                         }
                     }
 
@@ -90,7 +104,8 @@ class MainActivity : ComponentActivity() {
                         eventViewModel = eventViewModel,
                         context = applicationContext,
                         darkTheme = darkTheme,
-                        onThemeUpdated = { darkTheme = !darkTheme }
+                        onThemeUpdated = { darkTheme = !darkTheme },
+                        googleAuthUiClient = googleAuthUiClient
                     )
 
                 }

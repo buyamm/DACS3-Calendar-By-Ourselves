@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter
 
 data class Event(
     val userId: String? = "",
-    val title: String = "",
+    val title: String = "New event",
     val description: String = "",
     val checkAllDay: Boolean = false,
     val checkNotification: Boolean = false,
@@ -21,7 +21,11 @@ data class Event(
     val startDate: String = timestampToString(startDay),
     val endDate: String = timestampToString(endDay),
 
+    val host: Map<String, String?> = emptyMap(), // chứa email host và eventId của host
+    val guest: List<Map<String, String>> = emptyList() // chứa email khách và eventId khách
+
 )
+
 
 data class DottedEvent(
     val title: String = "",

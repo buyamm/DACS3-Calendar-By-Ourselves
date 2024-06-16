@@ -1,6 +1,5 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month.component
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,13 +36,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.CalendarDate
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
-import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 import com.google.android.play.integrity.internal.i
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.util.Date
-
+import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
+import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
+import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
+import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 
 @Composable
 fun CalendarCell(
@@ -56,6 +58,7 @@ fun CalendarCell(
     renderCell: @Composable BoxScope.() -> Unit = {},
     onCellClicked: (CalendarDate) -> Unit = {},
     homeViewModel: HomeViewModel = hiltViewModel(),
+    userData: UserData
 ) {
     val appColors = LocalAppColors.current
     var stateColor by remember { mutableStateOf(false) }
@@ -149,9 +152,11 @@ fun CalendarCell(
 
         LaunchedEffect(Unit, date.date) {
 
+
             homeViewModel.onChangeDate(date = date.date)
 
-            var check = homeViewModel.getDateHaveEventVM().find { date.date.toString() == it}
+            var check = homeViewModel.getDateHaveEventVM(userData).find { date.date.toString() == it}
+
             if(check == date.date.toString()) {
                 stateColor = true
             }

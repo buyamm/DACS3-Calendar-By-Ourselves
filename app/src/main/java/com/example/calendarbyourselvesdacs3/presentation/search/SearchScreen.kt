@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.data.Resource
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -36,7 +37,8 @@ import com.example.calendarbyourselvesdacs3.data.Resource
 fun SearchScreen(
     onBackClick: () -> Unit,
     onEventClick: (eventId: String) -> Unit,
-    viewModel: SearchViewModel = hiltViewModel()
+    viewModel: SearchViewModel = hiltViewModel(),
+    userData: UserData
 ) {
 
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
@@ -55,7 +57,7 @@ fun SearchScreen(
             query = uiState.searchQuery,
             onQueryChange = {
                viewModel.onQueryChange(it)
-               viewModel.updateEventListSearch(it)
+               viewModel.updateEventListSearch(it, userData)
             },
             onSearch = {  }, // hanh dong nhan nut tim kiem tren ban phim
             active = active,
@@ -87,15 +89,6 @@ fun SearchScreen(
                         .padding(all = 1.dp))
             },
         ) {
-//            if(onSearch){
-////                LazyColumn(contentPadding = PaddingValues(start = 16.dp, top = 16.dp, bottom = 16.dp)) {
-////                    items(MockApi.taskList){
-////                        EventWithDateComponent(task = it, onEventClick = onEventClick)
-////                        Spacer(modifier = Modifier.height(16.dp))
-////                    }
-////                }
-//
-//            }
 
             if(uiState.searchQuery.isNotEmpty()){
                 when(uiState.eventList){

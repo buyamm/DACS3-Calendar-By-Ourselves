@@ -39,16 +39,12 @@ fun NavGraph(
     eventViewModel: EventViewModel,
     context: Context,
     darkTheme: Boolean,
-    onThemeUpdated: () -> Unit
+    onThemeUpdated: () -> Unit,
+    googleAuthUiClient: GoogleAuthUiClient
 ) {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
-    val googleAuthUiClient by lazy {
-        GoogleAuthUiClient(
-            context = context,
-            oneTapClient = Identity.getSignInClient(context)
-        )
-    }
+
 
     NavHost(
         navController = navController,
@@ -108,6 +104,7 @@ fun NavGraph(
         }
 
 
+
 //        calendar - home page
         composable("calendar") {
             CalendarMonthScreen(
@@ -129,7 +126,7 @@ fun NavGraph(
                             "Signed out",
                             Toast.LENGTH_LONG
                         ).show()
-                        navController.popBackStack()
+                        navController.navigate(route = Screen.SignInScreen.name)
                     }
                 },
                 onSearchClick = {
@@ -142,12 +139,16 @@ fun NavGraph(
 
 
         composable(route = Screen.SearchScreen.name) {
-            SearchScreen(
-                onBackClick = { navController.popBackStack() },
-                onEventClick = { eventId ->
-                    navController.navigate(Screen.InteractWithTaskScreen.name + "/update?eventId=$eventId")
-                }
-            )
+            val userData = googleAuthUiClient.getSignedInUser()
+            if (userData != null) {
+                SearchScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onEventClick = { eventId ->
+                        navController.navigate(Screen.InteractWithTaskScreen.name + "/update?eventId=$eventId")
+                    },
+                    userData = userData
+                )
+            }
         }
 
 //        =============Create event================
@@ -156,12 +157,18 @@ fun NavGraph(
             route = Screen.InteractWithTaskScreen.name + "/create?date={date}",
             arguments = listOf(navArgument("date") {})
         ) {
-            InteractWithTaskScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToHomePage = { navController.navigate("calendar") },
-                date = it.arguments?.getString("date")?.localDateArg(),
-                viewModel = eventViewModel
-            )
+            val userData = googleAuthUiClient.getSignedInUser()
+
+            if (userData != null) {
+                InteractWithTaskScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateToHomePage = { navController.navigate("calendar") },
+                    date = it.arguments?.getString("date")?.localDateArg(),
+                    userData = userData,
+                    viewModel = eventViewModel
+                )
+            }
+
         }
 
 //        ================Update event======================
@@ -173,12 +180,18 @@ fun NavGraph(
                 defaultValue = ""
             })
         ) {
-            InteractWithTaskScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToHomePage = { navController.navigate("calendar") },
-                eventId = it.arguments?.getString("eventId") as String,
-                viewModel = eventViewModel
-            )
+            val userData = googleAuthUiClient.getSignedInUser()
+
+            if (userData != null) {
+                InteractWithTaskScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateToHomePage = { navController.navigate("calendar") },
+                    eventId = it.arguments?.getString("eventId") as String,
+                    userData = userData,
+                    viewModel = eventViewModel
+                )
+            }
+
         }
 
 //        =================Event List====================

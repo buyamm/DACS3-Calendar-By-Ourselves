@@ -6,30 +6,34 @@ import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.localDateToString
 import com.example.calendarbyourselvesdacs3.domain.model.event.timestampToString
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.google.firebase.Firebase
-import com.google.firebase.Timestamp
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.QuerySnapshot
-import com.google.firebase.firestore.auth.User
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.getField
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 
 const val EVENTS_COLLECTION_REF = "events"
 
-class EventRepository {
+class EventRepository @Inject constructor(
+
+) {
     private val eventsRef: CollectionReference =
         Firebase.firestore.collection(EVENTS_COLLECTION_REF)
 
-    fun user() = Firebase.auth.currentUser
+
+
 
     /**
      * .addOnSuccessListener { ... }: Đây là một hàm callback được gọi khi thao tác lấy dữ liệu từ Firestore thành công.
@@ -52,6 +56,24 @@ class EventRepository {
             .addOnFailureListener {
                 onError.invoke(it.cause)
             }
+
+    }
+
+    suspend fun getEventTest(eventId: String): Event? = suspendCancellableCoroutine { cont ->
+        eventsRef
+            .whereEqualTo("documentId", eventId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val event = snapshot.documents.firstOrNull()?.toObject(Event::class.java)
+                    cont.resume(event)
+                } else {
+                    cont.resume(null)// Không tìm thấy user
+                }
+            }
+            .addOnFailureListener { exception ->
+                cont.resumeWithException(exception)
+            }
     }
 
 
@@ -62,7 +84,19 @@ class EventRepository {
      * eventsRef.document(documentId).set(event): Truy cập tài liệu với ID vừa tạo và thiết lập dữ liệu của tài liệu đó bằng đối tượng event.
      *
      * */
-    fun addEvent(event: Event, onComplete: (Boolean) -> Unit) {
+    /**
+     * val documentId = eventsRef.document().id: Tạo một ID ngẫu nhiên mới cho tài liệu (sự kiện) trong Firestore.
+     * eventsRef.document() tạo một tham chiếu đến tài liệu mới, và .id lấy ID của tài liệu đó.
+     *
+     * eventsRef.document(documentId).set(event): Truy cập tài liệu với ID vừa tạo và thiết lập dữ liệu của tài liệu đó bằng đối tượng event.
+     *
+     * */
+    fun addEventHost(
+        event: Event,
+        listEmail: List<String> = emptyList(),
+        userData: UserData,
+        onComplete: (Boolean) -> Unit
+    ): String{
         val documentId = eventsRef.document().id
 
         var newEvent = Event(
@@ -76,7 +110,17 @@ class EventRepository {
             colorIndex = event.colorIndex,
             documentId = documentId,
             startDate = timestampToString(event.startDay),
-            endDate = timestampToString(event.endDay)
+            endDate = timestampToString(event.endDay),
+            host = mapOf(
+                "email" to userData?.email!!,
+                "eventId" to documentId
+            ),
+            guest = listEmail.mapIndexed { index, email ->
+                mapOf(
+                    "email" to email,
+                    "eventId" to ""
+                )
+            }
         )
 
         eventsRef
@@ -85,6 +129,48 @@ class EventRepository {
             .addOnCompleteListener {
                 onComplete.invoke(it.isSuccessful)
             }
+
+        return documentId
+    }
+
+    fun addEventGuest(
+        event: Event,
+        listEmail: List<String> = emptyList(),
+        onComplete: (Boolean) -> Unit,
+    ): String{
+        val documentId = eventsRef.document().id
+
+        var newEvent = Event(
+            userId = event.userId,
+            title = event.title,
+            description = event.description,
+            checkAllDay = event.checkAllDay,
+            checkNotification = event.checkNotification,
+            startDay = event.startDay,
+            endDay = event.endDay,
+            colorIndex = event.colorIndex,
+            documentId = documentId,
+            startDate = timestampToString(event.startDay),
+            endDate = timestampToString(event.endDay),
+            host = event.host,
+            guest = listEmail.mapIndexed { index, email ->
+                mapOf(
+                    "email" to email,
+                    "eventId" to ""
+                )
+            }
+        )
+
+
+
+        eventsRef
+            .document(documentId)
+            .set(newEvent)
+            .addOnCompleteListener {
+                onComplete.invoke(it.isSuccessful)
+            }
+
+        return documentId
     }
 
 
@@ -98,6 +184,13 @@ class EventRepository {
     }
 
 
+
+    /**
+     * val updateData = hashMapOf<String, Any>(...): Tạo một HashMap chứa các cặp khóa-giá trị đại diện cho các thuộc tính của sự kiện cần cập nhật.
+     * "title" to title: Cặp khóa-giá trị để cập nhật thuộc tính title.
+     * "description" to description: Cặp khóa-giá trị để cập nhật thuộc tính description.
+     * "colorIndex" to colorIndex: Cặp khóa-giá trị để cập nhật thuộc tính colorIndex.
+     * */
     /**
      * val updateData = hashMapOf<String, Any>(...): Tạo một HashMap chứa các cặp khóa-giá trị đại diện cho các thuộc tính của sự kiện cần cập nhật.
      * "title" to title: Cặp khóa-giá trị để cập nhật thuộc tính title.
@@ -105,7 +198,7 @@ class EventRepository {
      * "colorIndex" to colorIndex: Cặp khóa-giá trị để cập nhật thuộc tính colorIndex.
      * */
     fun updateEvent(event: Event, onComplete: (Boolean) -> Unit) {
-        val updateData = hashMapOf<String, Any>(
+        val updateData = hashMapOf(
             "title" to event.title,
             "description" to event.description,
             "checkAllDay" to event.checkAllDay,
@@ -115,13 +208,35 @@ class EventRepository {
             "colorIndex" to event.colorIndex,
             "startDate" to timestampToString(event.startDay),
             "endDate" to timestampToString(event.endDay),
+            "guest" to event.guest
         )
+
+        println("=================Check add event===================")
+        println("id evvent: ${event.documentId}")
+        println("title: ${event.title}")
+        println("des: ${event.description}")
+        println("startdate: ${timestampToString(event.startDay)}")
+        println("all day: ${event.checkAllDay}")
+        println("color: ${event.colorIndex}")
 
         eventsRef
             .document(event.documentId)
             .update(updateData)
             .addOnCompleteListener {
                 onComplete(it.isSuccessful)
+            }
+    }
+
+    fun updateGuestOfHost(eventId: String, guest: List<Map<String, String>>){
+        val updateData = hashMapOf<String,Any>(
+            "guest" to guest
+        )
+
+        eventsRef
+            .document(eventId)
+            .update(updateData)
+            .addOnCompleteListener {
+
             }
     }
 
@@ -149,6 +264,7 @@ class EventRepository {
                 trySend(Resource.Error(e?.cause))
                 e.printStackTrace()
             }
+            /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
             /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
             awaitClose {
                 snapshotStateListener?.remove()
@@ -187,6 +303,7 @@ class EventRepository {
                 e.printStackTrace()
             }
             /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
+            /**       Đảm bảo rằng khi Flow đóng, listener sẽ được gỡ bỏ để tránh rò rỉ bộ nhớ. */
             awaitClose {
                 titleSnapshotStateListener?.remove()
             }
@@ -220,6 +337,7 @@ class EventRepository {
 
 
     }
+
 
 }
 
