@@ -6,7 +6,7 @@ import com.example.calendarbyourselvesdacs3.common.date.getDatesBetween
 import com.example.calendarbyourselvesdacs3.common.room.converter.LocalDateConverter
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
-import com.google.firebase.auth.FirebaseUser
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,7 @@ class HomeViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
 
-    private val user: FirebaseUser? = repository.user()
+
     private var getEventsJob: Job? = null
 
     fun onChangeDate(date: LocalDate) {
@@ -36,14 +36,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun loadEventsByDate(date: LocalDate) {
+    fun loadEventsByDate(date: LocalDate, userData: UserData) {
         if (date != null) {
             getEventsJob?.cancel()
 
             getEventsJob = viewModelScope.launch {
-                if (user != null) {
+                if (userData != null) {
                     repository.loadEventByDate(
-                        userId = user.uid,
+                        userId = userData.userId,
                         selectedDate = date,
                     ).collect { result ->
                         result?.let {
@@ -70,7 +70,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun deleteEvent(event: Event) {
+    fun deleteEvent(event: Event, userData: UserData) {
         viewModelScope.launch {
             _uiState.update {
                 it.copy(deletedEvent = event)
@@ -85,13 +85,13 @@ class HomeViewModel @Inject constructor(
             }
 
             val emailListExceptCurrentUser = oldGuest.filter {
-                it["email"] != user?.email
+                it["email"] != userData?.email
             }.map {
                 it["email"] ?: ""
             }
 
             val eventIdListExceptCurrentUser = oldGuest.filter {
-                it["email"] != user?.email
+                it["email"] != userData?.email
             }.map {
                 it["eventId"] ?: ""
             }
@@ -105,7 +105,7 @@ class HomeViewModel @Inject constructor(
                 }
 
 //            Là chủ thì xóa hết
-            if (user?.email == eventt?.host?.get("email")) {
+            if (userData?.email == eventt?.host?.get("email")) {
                 oldGuest.forEach { map ->
                     map["eventId"]?.let { eventid ->
                         repository.deleteEvent(eventid) { completed ->
@@ -123,7 +123,7 @@ class HomeViewModel @Inject constructor(
                 }
             } else { // là khách thì xóa khách
                 oldGuest.forEach { map ->
-                    if (map["email"] == user?.email) { // xóa event khách
+                    if (map["email"] == userData?.email) { // xóa event khách
                         map["eventId"]?.let { eventid ->
                             repository.deleteEvent(eventid) { completed ->
                                 _uiState.update { homeUiState ->
@@ -157,17 +157,19 @@ class HomeViewModel @Inject constructor(
 //    }
 
 
-    suspend fun getDateHaveEventVM(): List<String> {
+    suspend fun getDateHaveEventVM(userData: UserData): List<String> {
 
-        var data = repository.getDateHaveEventRepo(user!!.uid)
+        var data = userData?.userId?.let { repository.getDateHaveEventRepo(it) }
         var tmpList = mutableListOf<String>()
 
-        for (i in data) {
-            for (j in getDatesBetween(
-                LocalDateConverter.toDate(i.startDate)!!,
-                LocalDateConverter.toDate(i.endDate)!!
-            )) {
-                tmpList.add(j.toString())
+        if (data != null) {
+            for (i in data) {
+                for (j in getDatesBetween(
+                    LocalDateConverter.toDate(i.startDate)!!,
+                    LocalDateConverter.toDate(i.endDate)!!
+                )) {
+                    tmpList.add(j.toString())
+                }
             }
         }
 

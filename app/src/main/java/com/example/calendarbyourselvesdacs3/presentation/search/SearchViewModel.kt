@@ -3,7 +3,7 @@ package com.example.calendarbyourselvesdacs3.presentation.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.calendarbyourselvesdacs3.data.repository.event.EventRepository
-import com.google.firebase.auth.FirebaseUser
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +20,7 @@ class SearchViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState = _uiState.asStateFlow()
 
-    private val user: FirebaseUser? = repository.user()
+
     private var getEventsJob: Job? = null
 
     fun onQueryChange(searchQuery: String){
@@ -35,11 +35,11 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun updateEventListSearch(query: String){
-        loadEventBySearch(query)
+    fun updateEventListSearch(query: String, userData: UserData){
+        loadEventBySearch(query, userData)
     }
 
-    private fun loadEventBySearch(query: String = ""){
+    private fun loadEventBySearch(query: String = "", userData: UserData){
         _uiState.update {
             it.copy(searchQuery = query)
         }
@@ -49,12 +49,14 @@ class SearchViewModel @Inject constructor(
 
 
             getEventsJob = viewModelScope.launch {
-                repository.loadEventBySearch(
-                    userId = user!!.uid,
-                    queryValue = query
-                ).collect{
-                    _uiState.update {searchUiState ->
-                        searchUiState.copy(eventList = it)
+                userData?.userId?.let {
+                    repository.loadEventBySearch(
+                        userId = it,
+                        queryValue = query
+                    ).collect{
+                        _uiState.update {searchUiState ->
+                            searchUiState.copy(eventList = it)
+                        }
                     }
                 }
 

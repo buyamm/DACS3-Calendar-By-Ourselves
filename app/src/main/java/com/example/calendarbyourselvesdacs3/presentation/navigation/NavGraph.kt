@@ -101,26 +101,7 @@ fun NavGraph(
                 }
             )
         }
-//        composable(Screen.HomeScreen.name) {
-//            HomeScreen(
-//                userData = googleAuthUiClient.getSignedInUser(),
-//                onSignOut = {
-//                    coroutineScope.launch {
-//                        googleAuthUiClient.signOut()
-//                        Toast.makeText(
-//                            context,
-//                            "Signed out",
-//                            Toast.LENGTH_LONG
-//                        ).show()
-//
-//                        navController.popBackStack()
-//                    }
-//                },
-//                onSearchClick = {
-//                    navController.navigate(route = Screen.SearchScreen.name)
-//                }
-//            )
-//        }
+
 
 
 //        calendar - home page
@@ -156,12 +137,16 @@ fun NavGraph(
 
 
         composable(route = Screen.SearchScreen.name) {
-            SearchScreen(
-                onBackClick = { navController.popBackStack() },
-                onEventClick = { eventId ->
-                    navController.navigate(Screen.InteractWithTaskScreen.name + "/update?eventId=$eventId")
-                }
-            )
+            val userData = googleAuthUiClient.getSignedInUser()
+            if (userData != null) {
+                SearchScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onEventClick = { eventId ->
+                        navController.navigate(Screen.InteractWithTaskScreen.name + "/update?eventId=$eventId")
+                    },
+                    userData = userData
+                )
+            }
         }
 
 //        Create event
@@ -170,12 +155,18 @@ fun NavGraph(
             route = Screen.InteractWithTaskScreen.name + "/create?date={date}",
             arguments = listOf(navArgument("date") {})
         ) {
-            InteractWithTaskScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToHomePage = { navController.navigate("calendar") },
-                date = it.arguments?.getString("date")?.localDateArg(),
-                viewModel = eventViewModel
-            )
+            val userData = googleAuthUiClient.getSignedInUser()
+
+            if (userData != null) {
+                InteractWithTaskScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateToHomePage = { navController.navigate("calendar") },
+                    date = it.arguments?.getString("date")?.localDateArg(),
+                    userData = userData,
+                    viewModel = eventViewModel
+                )
+            }
+
         }
 
 //        Update event
@@ -187,12 +178,18 @@ fun NavGraph(
                 defaultValue = ""
             })
         ) {
-            InteractWithTaskScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToHomePage = { navController.navigate("calendar") },
-                eventId = it.arguments?.getString("eventId") as String,
-                viewModel = eventViewModel
-            )
+            val userData = googleAuthUiClient.getSignedInUser()
+
+            if (userData != null) {
+                InteractWithTaskScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateToHomePage = { navController.navigate("calendar") },
+                    eventId = it.arguments?.getString("eventId") as String,
+                    userData = userData,
+                    viewModel = eventViewModel
+                )
+            }
+
         }
 
 //        Event List

@@ -5,8 +5,8 @@ import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.localDateToString
 import com.example.calendarbyourselvesdacs3.domain.model.event.timestampToString
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.QuerySnapshot
@@ -17,18 +17,21 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
+import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 
 const val EVENTS_COLLECTION_REF = "events"
 
-class EventRepository {
+class EventRepository @Inject constructor(
+
+) {
     private val eventsRef: CollectionReference =
         Firebase.firestore.collection(EVENTS_COLLECTION_REF)
 
 
-    fun user() = Firebase.auth.currentUser
+
 
     /**
      * .addOnSuccessListener { ... }: Đây là một hàm callback được gọi khi thao tác lấy dữ liệu từ Firestore thành công.
@@ -89,12 +92,13 @@ class EventRepository {
     fun addEventHost(
         event: Event,
         listEmail: List<String> = emptyList(),
-        onComplete: (Boolean) -> Unit,
+        userData: UserData,
+        onComplete: (Boolean) -> Unit
     ): String{
         val documentId = eventsRef.document().id
 
         var newEvent = Event(
-            userId = user()?.uid,
+            userId = event.userId,
             title = event.title,
             description = event.description,
             checkAllDay = event.checkAllDay,
@@ -106,7 +110,7 @@ class EventRepository {
             startDate = timestampToString(event.startDay),
             endDate = timestampToString(event.endDay),
             host = mapOf(
-                "email" to user()?.email!!,
+                "email" to userData?.email!!,
                 "eventId" to documentId
             ),
             guest = listEmail.mapIndexed { index, email ->
@@ -155,6 +159,8 @@ class EventRepository {
             }
         )
 
+
+
         eventsRef
             .document(documentId)
             .set(newEvent)
@@ -190,7 +196,7 @@ class EventRepository {
      * "colorIndex" to colorIndex: Cặp khóa-giá trị để cập nhật thuộc tính colorIndex.
      * */
     fun updateEvent(event: Event, onComplete: (Boolean) -> Unit) {
-        val updateData = hashMapOf<String, Any>(
+        val updateData = hashMapOf(
             "title" to event.title,
             "description" to event.description,
             "checkAllDay" to event.checkAllDay,
@@ -202,6 +208,14 @@ class EventRepository {
             "endDate" to timestampToString(event.endDay),
             "guest" to event.guest
         )
+
+        println("=================Check add event===================")
+        println("id evvent: ${event.documentId}")
+        println("title: ${event.title}")
+        println("des: ${event.description}")
+        println("startdate: ${timestampToString(event.startDay)}")
+        println("all day: ${event.checkAllDay}")
+        println("color: ${event.colorIndex}")
 
         eventsRef
             .document(event.documentId)

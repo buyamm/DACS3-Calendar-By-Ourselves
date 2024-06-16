@@ -64,7 +64,9 @@ fun CalendarMonthScreen(
     LaunchedEffect(Unit, date) {
         date?.let {
             homeViewModel.onChangeDate(date = date!!)
-            homeViewModel.loadEventsByDate(date = it)
+            if (userData != null) {
+                homeViewModel.loadEventsByDate(date = it, userData)
+            }
         }
     }
 
@@ -114,13 +116,16 @@ fun CalendarMonthScreen(
                 .fillMaxSize(),
         ) {
             if (state.monthDays != null) {
-                Calendar(
-                    date = state.currentDate,
-                    monthDays = state.monthDays!!,
-                    onPreviousMonth = { viewModel.onPreviousMonth() },
-                    onNextMonth = { viewModel.onNextMonth() },
-                    onDateClicked = { date -> viewModel.onDateClicked(date) },
-                )
+                if (userData != null) {
+                    Calendar(
+                        date = state.currentDate,
+                        monthDays = state.monthDays!!,
+                        onPreviousMonth = { viewModel.onPreviousMonth() },
+                        onNextMonth = { viewModel.onNextMonth() },
+                        onDateClicked = { date -> viewModel.onDateClicked(date) },
+                        userData = userData
+                    )
+                }
             }
             Divider(modifier = Modifier.fillMaxWidth(1f), color = Color.LightGray, thickness = 1.dp)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -161,13 +166,6 @@ fun CalendarMonthScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             itemsIndexed(uiState.eventList.data) { index, event ->
-//                                EventWithoutDescriptionComponent(
-//                                    event = event,
-//                                    onEventClick = {
-//                                        onNavigateToUpdateEvent(it)
-//                                    }
-//                                )
-//                                Spacer(modifier = Modifier.height(16.dp))
 
                                 EventComponentLikeApple(
                                     event = event,
@@ -205,6 +203,7 @@ private fun Calendar(
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onDateClicked: (LocalDate) -> Unit,
+    userData: UserData
 ) {
     CalendarView(
         modifier = Modifier
@@ -215,6 +214,7 @@ private fun Calendar(
         onCellClicked = { cellDate -> onDateClicked(cellDate.date) },
         renderCell = { cellDate ->
         },
+        userData = userData
     )
     Row(
         modifier = Modifier

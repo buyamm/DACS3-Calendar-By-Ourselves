@@ -1,6 +1,5 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month.component
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,19 +32,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.calendarbyourselvesdacs3.common.date.listBetweenDates
-import com.example.calendarbyourselvesdacs3.data.remote.FirebaseRealtime
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.CalendarDate
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
-import com.example.calendarbyourselvesdacs3.presentation.calendar.month.CalendarMonthViewModel
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
-import com.example.calendarbyourselvesdacs3.presentation.event.EventViewModel
 import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
 
 @Composable
 fun CalendarCell(
@@ -56,6 +48,7 @@ fun CalendarCell(
     renderCell: @Composable BoxScope.() -> Unit = {},
     onCellClicked: (CalendarDate) -> Unit = {},
     homeViewModel: HomeViewModel = hiltViewModel(),
+    userData: UserData
 ) {
     val appColors = LocalAppColors.current
     var stateColor by remember { mutableStateOf(false) }
@@ -130,7 +123,7 @@ fun CalendarCell(
 
         LaunchedEffect(Unit, date.date) {
 
-            var check = homeViewModel.getDateHaveEventVM().find { date.date.toString() == it}
+            var check = homeViewModel.getDateHaveEventVM(userData).find { date.date.toString() == it}
             if(check == date.date.toString()) {
                 stateColor = true
             }

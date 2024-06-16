@@ -8,8 +8,8 @@ import com.example.calendarbyourselvesdacs3.data.repository.event.UserRepository
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.stringToLocalTime
 import com.example.calendarbyourselvesdacs3.domain.model.user.User
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +33,7 @@ class EventViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
 
-    val user: FirebaseUser? = repository.user()
+
     private var getUsersJob: Job? = null
 
     fun onTitleChange(title: String) {
@@ -151,7 +151,7 @@ class EventViewModel @Inject constructor(
         }
     }
 
-    fun addEvent() {
+    fun addEvent(userData: UserData) {
         val startDay = handleDateTimeToTimeStamp(_uiState.value.startDate, _uiState.value.startTime)
         val endDay = handleDateTimeToTimeStamp(_uiState.value.endDate, _uiState.value.endTime)
 
@@ -160,44 +160,50 @@ class EventViewModel @Inject constructor(
         val listUserId = _uiState.value.selectedUserList.map { it.uid }
         val listGuestEventId: MutableList<String> = mutableListOf()
 
+        val title = _uiState.value.title
+        val des = _uiState.value.description
+        val checkAllDay = _uiState.value.isCheckAllDay
+        val checkNotification = _uiState.value.isCheckNotification
+        val colorIndex = _uiState.value.colorIndex
 //        Host
         var eventIdHost = ""
         var event = Event(
-            userId = user?.uid,
-            title = _uiState.value.title,
-            description = _uiState.value.description,
-            checkAllDay = _uiState.value.isCheckAllDay,
-            checkNotification = _uiState.value.isCheckNotification,
+            userId = userData.userId,
+            title = title,
+            description = des,
+            checkAllDay = checkAllDay,
+            checkNotification = checkNotification,
             startDay = startDay,
             endDay = endDay,
-            colorIndex = _uiState.value.colorIndex,
+            colorIndex = colorIndex,
         )
 
-        eventIdHost = repository.addEventHost(event, listEmail) { completed ->
+        eventIdHost = repository.addEventHost(event, listEmail, userData) { completed ->
             _uiState.update {
                 it.copy(eventAddedStatus = completed)
             }
         }
 
+
 //         guests
         if (listUserId.isNotEmpty()) {
             listUserId.forEach { uid ->
-                var newEvent = mapOf(
-                    "email" to user?.email,
-                    "eventId" to eventIdHost
-                )?.let {
-                    Event(
+                var newEvent = Event(
                         userId = uid,
-                        title = _uiState.value.title,
-                        description = _uiState.value.description,
-                        checkAllDay = _uiState.value.isCheckAllDay,
-                        checkNotification = _uiState.value.isCheckNotification,
+                        title = title,
+                        description = des,
+                        checkAllDay = checkAllDay,
+                        checkNotification = checkNotification,
                         startDay = startDay,
                         endDay = endDay,
-                        colorIndex = _uiState.value.colorIndex,
-                        host = it
+                        colorIndex = colorIndex,
+                        host = mapOf(
+                            "email" to userData?.email,
+                            "eventId" to eventIdHost
+                        )
                     )
-                }
+
+
                 if (newEvent != null) {
                     val eventId = repository.addEventGuest(newEvent, listEmail) { complete ->
                         _uiState.update {
@@ -210,7 +216,7 @@ class EventViewModel @Inject constructor(
         }
 
 
-//      update guest của host va` guest cua guest
+//      update guest của host
         if (listGuestEventId.isNotEmpty()) {
             var guest: List<Map<String, String>> = listEmail.mapIndexed { index, email ->
                 mapOf(
@@ -231,29 +237,30 @@ class EventViewModel @Inject constructor(
     }
 
     @SuppressLint("SuspiciousIndentation")
-    fun updateEvent(eventId: String) {
+    fun updateEvent(eventId: String, userData: UserData) {
         viewModelScope.launch {
             val startDay =
                 handleDateTimeToTimeStamp(_uiState.value.startDate, _uiState.value.startTime)
             val endDay = handleDateTimeToTimeStamp(_uiState.value.endDate, _uiState.value.endTime)
 
-            println("=================Check uiState===================")
-            println("title: ${_uiState.value.title}")
-            println("des: ${_uiState.value.description}")
-            println("startdate: ${_uiState.value.startDate}")
-            println("all day: ${_uiState.value.isCheckAllDay}")
-            println("color: ${_uiState.value.colorIndex}")
+            val title = _uiState.value.title
+            val desc = _uiState.value.description
+            val checkAllDay = _uiState.value.isCheckAllDay
+            val checkNotification = _uiState.value.isCheckNotification
+            val colorIndex = _uiState.value.colorIndex
+
 
 
             var oldGuest: List<Map<String, String>> = emptyList()
             val listEmail = _uiState.value.selectedUserList.map { it.email }
             val listGuestEventId: MutableList<String> = mutableListOf()
-
+            var eventIdHost = ""
 
 
             val eventt = repository.getEventTest(eventId)
             if (eventt != null && eventt.guest != null) {
                 oldGuest = eventt.guest
+                eventIdHost = eventt.host["eventId"].toString()
             }
 
 
@@ -266,16 +273,21 @@ class EventViewModel @Inject constructor(
                         listGuestEventId.add(guestEventId)
                     }
                 } else {
+                    // them khach moi
                     val newUser = userRepository.getUser(email)
-                    var newEvent = Event(
+                    val newEvent = Event(
                         userId = newUser?.uid,
-                        title = _uiState.value.title,
-                        description = _uiState.value.description,
-                        checkAllDay = _uiState.value.isCheckAllDay,
-                        checkNotification = _uiState.value.isCheckNotification,
+                        title = title,
+                        description = desc,
+                        checkAllDay = checkAllDay,
+                        checkNotification = checkNotification,
                         startDay = startDay,
                         endDay = endDay,
-                        colorIndex = _uiState.value.colorIndex,
+                        colorIndex = colorIndex,
+                        host = mapOf(
+                            "email" to userData?.email,
+                            "eventId" to eventIdHost
+                        ),
                         guest = listEmail.mapIndexed { index, email ->
                             mapOf(
                                 "email" to email,
@@ -310,13 +322,13 @@ class EventViewModel @Inject constructor(
 //             Update host
             val eventUpdate = Event(
                 documentId = eventId,
-                title = _uiState.value.title,
-                description = _uiState.value.description,
-                checkAllDay = _uiState.value.isCheckAllDay,
-                checkNotification = _uiState.value.isCheckNotification,
+                title = title,
+                description = desc,
+                checkAllDay = checkAllDay,
+                checkNotification = checkNotification,
                 startDay = startDay,
                 endDay = endDay,
-                colorIndex = _uiState.value.colorIndex,
+                colorIndex = colorIndex,
                 guest = listEmail.mapIndexed { index, email ->
                     mapOf(
                         "email" to email,
@@ -324,6 +336,7 @@ class EventViewModel @Inject constructor(
                     )
                 }
             )
+
             repository.updateEvent(eventUpdate) { completed ->
                 _uiState.update {
                     it.copy(eventUpdatedStatus = completed)
@@ -334,13 +347,13 @@ class EventViewModel @Inject constructor(
             listGuestEventId.forEach { eventId ->
                 val eventUpdate = Event(
                     documentId = eventId,
-                    title = _uiState.value.title,
-                    description = _uiState.value.description,
-                    checkAllDay = _uiState.value.isCheckAllDay,
-                    checkNotification = _uiState.value.isCheckNotification,
+                    title = title,
+                    description = desc,
+                    checkAllDay = checkAllDay,
+                    checkNotification = checkNotification,
                     startDay = startDay,
                     endDay = endDay,
-                    colorIndex = _uiState.value.colorIndex,
+                    colorIndex = colorIndex,
                     guest = listEmail.mapIndexed { index, email ->
                         mapOf(
                             "email" to email,
@@ -361,10 +374,10 @@ class EventViewModel @Inject constructor(
     }
 
 
-    fun getEvent(eventId: String) {
+    fun getEvent(eventId: String, userData: UserData) {
         repository.getEvent(eventId = eventId, onError = {}) { event ->
             if (event != null) {
-                setEditField(event)
+                setEditField(event, userData)
             }
         }
     }
@@ -396,7 +409,7 @@ class EventViewModel @Inject constructor(
         onTime.invoke(dateTime.toLocalTime())
     }
 
-    fun setEditField(event: Event) {
+    fun setEditField(event: Event, userData: UserData) {
         var startDate: LocalDate? = null
         var startTime: LocalTime? = null
         var endDate: LocalDate? = null
@@ -436,10 +449,12 @@ class EventViewModel @Inject constructor(
                     startTime = startTime!!,
                     endTime = endTime!!,
                     selectedUserList = nonNullUsers,
-                    isHost = user?.email == event.host["email"],
+                    isHost = userData?.email == event.host["email"],
                     hostEmail = host!!
                 )
             }
+
+
         }
     }
 

@@ -75,9 +75,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.event.PairColor
 import com.example.calendarbyourselvesdacs3.domain.model.user.User
+import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
 import com.example.calendarbyourselvesdacs3.presentation.event.component.SelectedUserResult
 import com.example.calendarbyourselvesdacs3.presentation.event.component.UserSearchResult
-import com.example.calendarbyourselvesdacs3.presentation.event.component.mySnackBar
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -97,6 +97,7 @@ fun InteractWithTaskScreen(
     onNavigateToHomePage: () -> Unit,
     eventId: String = "",
     date: LocalDate? = null,
+    userData: UserData,
     viewModel: EventViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
@@ -105,6 +106,9 @@ fun InteractWithTaskScreen(
         mutableStateOf(false)
     }
     var isInitialComposition by remember { mutableStateOf(true) }
+    var isHost by remember {
+        mutableStateOf(false) // moi vo false
+    }
 
 
     val context = LocalContext.current
@@ -115,31 +119,32 @@ fun InteractWithTaskScreen(
     }
 
 
+
     LaunchedEffect(Unit) {
         if (isEventIdNotBlank) {
-            viewModel.getEvent(eventId = eventId)
+            viewModel.getEvent(eventId = eventId, userData = userData)
         } else {
             viewModel.resetState()
         }
     }
 
-    LaunchedEffect(uiState.isHost) {
-        if(isInitialComposition){
-            isInitialComposition = false
-        }else{
-            if (!uiState.isHost){
-                mySnackBar(
-                    scope = scope,
-                    snackBarHostState = snackbarHostState,
-                    msg = "Only the host can change this event",
-                    actionLabel = "",
-                    onAction = {
-                    }
-                )
-            }
-        }
-
-    }
+//    LaunchedEffect(isInitialComposition) {
+//        if (isInitialComposition) {
+//            isInitialComposition = false
+//        } else {
+//            if (uiState.hostEmail !== emailHost) {
+//                mySnackBar(
+//                    scope = scope,
+//                    snackBarHostState = snackbarHostState,
+//                    msg = "Only the host can change this event",
+//                    actionLabel = "",
+//                    onAction = {
+//                    }
+//                )
+//            }
+//        }
+//
+//    }
 
 
 
@@ -162,17 +167,17 @@ fun InteractWithTaskScreen(
                 },
                 actions = {
                     Box(
-                        modifier = if (isCanSave && (uiState.isHost || !isEventIdNotBlank)) {
+                        modifier = if (isCanSave && (uiState.hostEmail == userData.email || !isEventIdNotBlank)) {
                             Modifier
                                 .requiredHeight(40.dp)
                                 .requiredWidth(80.dp)
                                 .clickable {
                                     if (isEventIdNotBlank) {
-                                        viewModel.updateEvent(eventId)
+                                        viewModel.updateEvent(eventId, userData)
                                         viewModel.resetState()
                                         onBack()
                                     } else {
-                                        viewModel.addEvent()
+                                        viewModel.addEvent(userData)
                                         viewModel.resetState()
                                         onNavigateToHomePage()
                                     }
@@ -199,7 +204,9 @@ fun InteractWithTaskScreen(
                             text = "Save",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (isCanSave && (uiState.isHost || !isEventIdNotBlank)) Color(0xFF596FB7) else Color.LightGray
+                            color = if (isCanSave && (uiState.hostEmail == userData.email || !isEventIdNotBlank)) Color(
+                                0xFF596FB7
+                            ) else Color.LightGray
                         )
                     }
                 },
@@ -257,7 +264,7 @@ fun InteractWithTaskScreen(
 
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                addGuestComponent(uiState, viewModel)
+                userData.email?.let { it1 -> addGuestComponent(uiState, it1, viewModel) }
                 Spacer(modifier = Modifier.height(24.dp))
                 Divider(
                     modifier = Modifier
@@ -669,7 +676,11 @@ fun ColorPickerDialog(
 }
 
 @Composable
-fun descriptionComponent(uiState: EventUiState,focusManager: FocusManager, viewModel: EventViewModel) {
+fun descriptionComponent(
+    uiState: EventUiState,
+    focusManager: FocusManager,
+    viewModel: EventViewModel
+) {
 
     val placeholderText = "Add description content"
 
@@ -716,7 +727,7 @@ fun descriptionComponent(uiState: EventUiState,focusManager: FocusManager, viewM
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
+fun addGuestComponent(uiState: EventUiState, emailHost: String, viewModel: EventViewModel) {
     val placeholderText = "Add guest"
     var isSheetOpen by rememberSaveable {
         mutableStateOf(false)
@@ -741,15 +752,20 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
                 if (uiState.documentId == "") {
                     isSheetOpen = true
                 } else {
-                    if (uiState.isHost) {
+                    if (uiState.hostEmail == emailHost) {
                         isSheetOpen = true
                     }
                 }
             }
         ) {
-            if(uiState.selectedUserList.isNotEmpty()){
-                EmailBoxes(users = uiState.selectedUserList, uiState = uiState, viewModel = viewModel)
-            }else{
+            if (uiState.selectedUserList.isNotEmpty()) {
+                EmailBoxes(
+                    users = uiState.selectedUserList,
+                    emailHost = emailHost,
+                    uiState = uiState,
+                    viewModel = viewModel
+                )
+            } else {
                 Text(
                     text = placeholderText,
                     fontSize = 20.sp,
@@ -845,7 +861,7 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
                         )
                     ) {
                         items(uiState.selectedUserList) { user ->
-                            if(user.email != viewModel.user?.email){
+                            if (user.email != emailHost) {
                                 SelectedUserResult(user = user) {
                                     viewModel.onRemoveSelectedUser(it)
                                 }
@@ -860,13 +876,18 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
 
 
 @Composable
-fun EmailBoxes(users: List<User>, uiState: EventUiState, viewModel: EventViewModel) {
+fun EmailBoxes(
+    users: List<User>,
+    emailHost: String,
+    uiState: EventUiState,
+    viewModel: EventViewModel
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        if(uiState.hostEmail == viewModel.user?.email){
+        if (uiState.hostEmail == emailHost) {
             Text(
                 text = "You",
                 style = MaterialTheme.typography.bodyMedium,
@@ -877,14 +898,14 @@ fun EmailBoxes(users: List<User>, uiState: EventUiState, viewModel: EventViewMod
                 fontSize = 16.sp
             )
             users.forEach { u ->
-                if (u.email != viewModel.user?.email){
+                if (u.email != emailHost) {
                     EmailBox(email = u.email)
                     Spacer(modifier = Modifier.height(4.dp))
                 }
             }
-        }else{
+        } else {
             Text(
-                text = if(uiState.hostEmail != "") uiState.hostEmail else "You",
+                text = if (uiState.hostEmail != "") uiState.hostEmail else "ban",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .background(Color.Gray, shape = RoundedCornerShape(8.dp))
@@ -893,8 +914,8 @@ fun EmailBoxes(users: List<User>, uiState: EventUiState, viewModel: EventViewMod
                 fontSize = 16.sp
             )
             users.forEach { u ->
-                    EmailBox(email = u.email)
-                    Spacer(modifier = Modifier.height(4.dp))
+                EmailBox(email = u.email)
+                Spacer(modifier = Modifier.height(4.dp))
             }
         }
 
