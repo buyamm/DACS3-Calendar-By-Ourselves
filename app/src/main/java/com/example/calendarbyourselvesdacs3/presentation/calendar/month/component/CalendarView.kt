@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +42,10 @@ fun CalendarView(
     var calendarLayout by remember { mutableStateOf<CalendarLayout?>(null) }
     val appColors = LocalAppColors.current
 
+    var selectedDateIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+
+
+
     //hien thu ngay trong tuan
     LazyColumn {
         item {
@@ -65,6 +70,8 @@ fun CalendarView(
                 calendarLayout?.run {
                     monthDays.forEachIndexed { i, calendarDate ->
                         CalendarCell(
+                            dateClicked = selectedDateIndex == i,
+                            onDateClick = { selectedDateIndex = i },
                             index = i,
                             cellSize = cellSize,
                             date = calendarDate,

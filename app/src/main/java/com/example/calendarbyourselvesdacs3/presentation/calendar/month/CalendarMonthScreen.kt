@@ -54,11 +54,10 @@ fun CalendarMonthScreen(
     onSearchClick: () -> Unit,
     homeViewModel: HomeViewModel = hiltViewModel(),
     darkTheme: Boolean,
-    onThemeUpdated: () -> Unit
+    onThemeUpdated: () -> Unit,
 ) {
     val state by viewModel.collectAsState() // by thì không cần .value
     val uiState = homeViewModel.uiState.collectAsStateWithLifecycle().value
-    val dataLoaded = homeViewModel.dataLoaded.collectAsStateWithLifecycle().value
 
     var date by remember {
         mutableStateOf<LocalDate?>(null)
@@ -67,7 +66,7 @@ fun CalendarMonthScreen(
 
     LaunchedEffect(Unit, date) {
         date?.let {
-            homeViewModel.onChangeDate(date = date!!)
+            homeViewModel.onChangeDate(date = it!!)
             homeViewModel.loadEventsByDate(date = it)
         }
     }
@@ -174,9 +173,19 @@ fun CalendarMonthScreen(
                             }
                         }
                     } else {
-                        NoEventScreen() {
-                            onNavigateCreateEvent(date!!)
+
+                        if (date == null) {
+                            uiState.clickedDate?.let { date ->
+                                NoEventScreen() {
+                                    onNavigateCreateEvent(date)
+                                }
+                            }
+                        } else {
+                            NoEventScreen() {
+                                onNavigateCreateEvent(date!!)
+                            }
                         }
+
                     }
 
                 }

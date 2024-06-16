@@ -11,5 +11,5 @@ data class HomeUiState(
 
     val deletedEvent: Event? = null,
     val eventDeletedStatus: Boolean = false,
-    val eventUndoDeletedStatus: Boolean = false
+    val eventUndoDeletedStatus: Boolean = false,
 )
