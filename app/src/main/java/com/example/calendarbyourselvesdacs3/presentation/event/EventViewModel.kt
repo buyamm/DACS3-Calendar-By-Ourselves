@@ -210,7 +210,7 @@ class EventViewModel @Inject constructor(
         }
 
 
-//      update guest của host
+//      update guest của host va` guest cua guest
         if (listGuestEventId.isNotEmpty()) {
             var guest: List<Map<String, String>> = listEmail.mapIndexed { index, email ->
                 mapOf(
@@ -222,6 +222,11 @@ class EventViewModel @Inject constructor(
                 eventId = eventIdHost,
                 guest = guest
             )
+
+//            update guest cua guest
+            listGuestEventId.forEach {eventId ->
+                repository.updateGuestOfHost(eventId, guest)
+            }
         }
     }
 
@@ -231,6 +236,14 @@ class EventViewModel @Inject constructor(
             val startDay =
                 handleDateTimeToTimeStamp(_uiState.value.startDate, _uiState.value.startTime)
             val endDay = handleDateTimeToTimeStamp(_uiState.value.endDate, _uiState.value.endTime)
+
+            println("=================Check uiState===================")
+            println("title: ${_uiState.value.title}")
+            println("des: ${_uiState.value.description}")
+            println("startdate: ${_uiState.value.startDate}")
+            println("all day: ${_uiState.value.isCheckAllDay}")
+            println("color: ${_uiState.value.colorIndex}")
+
 
             var oldGuest: List<Map<String, String>> = emptyList()
             val listEmail = _uiState.value.selectedUserList.map { it.email }

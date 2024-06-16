@@ -145,7 +145,7 @@ fun NavGraph(
                             Toast.LENGTH_LONG
                         ).show()
 
-                        navController.popBackStack()
+                        navController.navigate(route = Screen.SignInScreen.name)
                     }
                 },
                 onSearchClick = {

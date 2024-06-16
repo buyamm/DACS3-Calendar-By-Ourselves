@@ -104,6 +104,9 @@ fun InteractWithTaskScreen(
     var isCanSave by remember {
         mutableStateOf(false)
     }
+    var isInitialComposition by remember { mutableStateOf(true) }
+
+
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
@@ -112,12 +115,19 @@ fun InteractWithTaskScreen(
     }
 
 
-
     LaunchedEffect(Unit) {
         if (isEventIdNotBlank) {
             viewModel.getEvent(eventId = eventId)
+        } else {
+            viewModel.resetState()
+        }
+    }
 
-            if(!uiState.isHost){
+    LaunchedEffect(uiState.isHost) {
+        if(isInitialComposition){
+            isInitialComposition = false
+        }else{
+            if (!uiState.isHost){
                 mySnackBar(
                     scope = scope,
                     snackBarHostState = snackbarHostState,
@@ -127,9 +137,8 @@ fun InteractWithTaskScreen(
                     }
                 )
             }
-        } else {
-            viewModel.resetState()
         }
+
     }
 
 
@@ -153,7 +162,7 @@ fun InteractWithTaskScreen(
                 },
                 actions = {
                     Box(
-                        modifier = if (isCanSave && uiState.isHost) {
+                        modifier = if (isCanSave && (uiState.isHost || !isEventIdNotBlank)) {
                             Modifier
                                 .requiredHeight(40.dp)
                                 .requiredWidth(80.dp)
@@ -190,7 +199,7 @@ fun InteractWithTaskScreen(
                             text = "Save",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (isCanSave && uiState.isHost) Color(0xFF596FB7) else Color.LightGray
+                            color = if (isCanSave && (uiState.isHost || !isEventIdNotBlank)) Color(0xFF596FB7) else Color.LightGray
                         )
                     }
                 },
@@ -875,7 +884,7 @@ fun EmailBoxes(users: List<User>, uiState: EventUiState, viewModel: EventViewMod
             }
         }else{
             Text(
-                text = uiState.hostEmail,
+                text = if(uiState.hostEmail != "") uiState.hostEmail else "You",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .background(Color.Gray, shape = RoundedCornerShape(8.dp))
