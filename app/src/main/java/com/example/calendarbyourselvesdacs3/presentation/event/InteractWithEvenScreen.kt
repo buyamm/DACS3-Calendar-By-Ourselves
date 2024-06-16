@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
@@ -42,6 +43,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -54,12 +57,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -71,6 +77,7 @@ import com.example.calendarbyourselvesdacs3.domain.model.event.PairColor
 import com.example.calendarbyourselvesdacs3.domain.model.user.User
 import com.example.calendarbyourselvesdacs3.presentation.event.component.SelectedUserResult
 import com.example.calendarbyourselvesdacs3.presentation.event.component.UserSearchResult
+import com.example.calendarbyourselvesdacs3.presentation.event.component.mySnackBar
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -98,10 +105,28 @@ fun InteractWithTaskScreen(
         mutableStateOf(false)
     }
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+
 
     LaunchedEffect(Unit) {
         if (isEventIdNotBlank) {
             viewModel.getEvent(eventId = eventId)
+
+            if(!uiState.isHost){
+                mySnackBar(
+                    scope = scope,
+                    snackBarHostState = snackbarHostState,
+                    msg = "Only the host can change this event",
+                    actionLabel = "",
+                    onAction = {
+                    }
+                )
+            }
         } else {
             viewModel.resetState()
         }
@@ -110,6 +135,7 @@ fun InteractWithTaskScreen(
 
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(text = "") },
@@ -127,7 +153,7 @@ fun InteractWithTaskScreen(
                 },
                 actions = {
                     Box(
-                        modifier = if (isCanSave) {
+                        modifier = if (isCanSave && uiState.isHost) {
                             Modifier
                                 .requiredHeight(40.dp)
                                 .requiredWidth(80.dp)
@@ -155,6 +181,7 @@ fun InteractWithTaskScreen(
                                 .requiredHeight(40.dp)
                                 .requiredWidth(80.dp)
                                 .background(Color.Transparent)
+
                         },
                         contentAlignment = Alignment.Center
 
@@ -163,7 +190,7 @@ fun InteractWithTaskScreen(
                             text = "Save",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (isCanSave) Color(0xFF596FB7) else Color.LightGray
+                            color = if (isCanSave && uiState.isHost) Color(0xFF596FB7) else Color.LightGray
                         )
                     }
                 },
@@ -182,6 +209,7 @@ fun InteractWithTaskScreen(
                     { b: Boolean ->
                         isCanSave = b
                     },
+                    focusManager,
                     viewModel
                 )
                 Spacer(modifier = Modifier.height(30.dp))
@@ -199,7 +227,7 @@ fun InteractWithTaskScreen(
 
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                descriptionComponent(uiState, viewModel)
+                descriptionComponent(uiState, focusManager, viewModel)
                 Spacer(modifier = Modifier.height(24.dp))
                 Divider(
                     modifier = Modifier
@@ -243,6 +271,7 @@ fun InteractWithTaskScreen(
 fun EditFieldTitleComponent(
     uiState: EventUiState,
     checkDateValidToSave: (Boolean) -> Unit,
+    focusManager: FocusManager,
     viewModel: EventViewModel
 ) {
 
@@ -271,6 +300,11 @@ fun EditFieldTitleComponent(
                 containerColor = Color.Transparent
             ),
             textStyle = TextStyle(fontSize = 20.sp),
+            keyboardActions = KeyboardActions(
+                onDone = {
+                    focusManager.clearFocus()
+                }
+            ),
             modifier = Modifier.fillMaxWidth(1f)
         )
     }
@@ -312,6 +346,8 @@ fun checkAllDayComponent(
                 }
             )
         }
+
+
     }
     Spacer(modifier = Modifier.height(20.dp))
     dataAndTimePickerComponent(
@@ -624,7 +660,7 @@ fun ColorPickerDialog(
 }
 
 @Composable
-fun descriptionComponent(uiState: EventUiState, viewModel: EventViewModel) {
+fun descriptionComponent(uiState: EventUiState,focusManager: FocusManager, viewModel: EventViewModel) {
 
     val placeholderText = "Add description content"
 
@@ -656,6 +692,11 @@ fun descriptionComponent(uiState: EventUiState, viewModel: EventViewModel) {
                     viewModel.onDescChange(it)
                 },
                 textStyle = TextStyle(fontSize = 20.sp, color = Color.Black),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        focusManager.clearFocus()
+                    }
+                ),
                 modifier = Modifier
                     .fillMaxSize(1f),
             )
@@ -688,17 +729,17 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
         Box(modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                if(uiState.documentId == ""){
+                if (uiState.documentId == "") {
                     isSheetOpen = true
-                }else{
-                    if(uiState.isHost){
+                } else {
+                    if (uiState.isHost) {
                         isSheetOpen = true
                     }
                 }
             }
         ) {
             if(uiState.selectedUserList.isNotEmpty()){
-                EmailBoxes(users = uiState.selectedUserList, viewModel = viewModel)
+                EmailBoxes(users = uiState.selectedUserList, uiState = uiState, viewModel = viewModel)
             }else{
                 Text(
                     text = placeholderText,
@@ -810,27 +851,44 @@ fun addGuestComponent(uiState: EventUiState, viewModel: EventViewModel) {
 
 
 @Composable
-fun EmailBoxes(users: List<User>, viewModel: EventViewModel) {
+fun EmailBoxes(users: List<User>, uiState: EventUiState, viewModel: EventViewModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text(
-            text = "You",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .background(Color.Gray, shape = RoundedCornerShape(8.dp))
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            color = Color.White,
-            fontSize = 16.sp
-        )
-        users.forEach { u ->
-            if (u.email != viewModel.user?.email){
-                EmailBox(email = u.email)
-                Spacer(modifier = Modifier.height(4.dp))
+        if(uiState.hostEmail == viewModel.user?.email){
+            Text(
+                text = "You",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                color = Color.White,
+                fontSize = 16.sp
+            )
+            users.forEach { u ->
+                if (u.email != viewModel.user?.email){
+                    EmailBox(email = u.email)
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+        }else{
+            Text(
+                text = uiState.hostEmail,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                color = Color.White,
+                fontSize = 16.sp
+            )
+            users.forEach { u ->
+                    EmailBox(email = u.email)
+                    Spacer(modifier = Modifier.height(4.dp))
             }
         }
+
     }
 }
 

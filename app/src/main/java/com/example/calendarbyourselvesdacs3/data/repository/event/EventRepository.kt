@@ -94,7 +94,7 @@ class EventRepository {
         val documentId = eventsRef.document().id
 
         var newEvent = Event(
-            userId = event.userId,
+            userId = user()?.uid,
             title = event.title,
             description = event.description,
             checkAllDay = event.checkAllDay,

@@ -77,26 +77,71 @@ class HomeViewModel @Inject constructor(
             }
 
             var oldGuest: List<Map<String, String>> = emptyList()
+            var hostEventId = ""
             val eventt = repository.getEventTest(event.documentId)
             if (eventt != null && eventt.guest != null) {
                 oldGuest = eventt.guest
+                hostEventId = event.host["eventId"].toString()
             }
 
-            oldGuest.forEach { map ->
+            val emailListExceptCurrentUser = oldGuest.filter {
+                it["email"] != user?.email
+            }.map {
+                it["email"] ?: ""
+            }
 
-                map["eventId"]?.let {eventid ->
-                    repository.deleteEvent(eventid) { completed ->
-                        _uiState.update {homeUiState ->
-                            homeUiState.copy(eventDeletedStatus = completed)
+            val eventIdListExceptCurrentUser = oldGuest.filter {
+                it["email"] != user?.email
+            }.map {
+                it["eventId"] ?: ""
+            }
+
+            var newGuest: List<Map<String, String>> =
+                emailListExceptCurrentUser.mapIndexed { index, email ->
+                    mapOf(
+                        "email" to email,
+                        "eventId" to eventIdListExceptCurrentUser[index]
+                    )
+                }
+
+//            Là chủ thì xóa hết
+            if (user?.email == eventt?.host?.get("email")) {
+                oldGuest.forEach { map ->
+                    map["eventId"]?.let { eventid ->
+                        repository.deleteEvent(eventid) { completed ->
+                            _uiState.update { homeUiState ->
+                                homeUiState.copy(eventDeletedStatus = completed)
+                            }
                         }
                     }
                 }
-            }
 
-            repository.deleteEvent(eventId = event.documentId) { completed ->
-                _uiState.update {
-                    it.copy(eventDeletedStatus = completed)
+                repository.deleteEvent(eventId = event.documentId) { completed ->
+                    _uiState.update {
+                        it.copy(eventDeletedStatus = completed)
+                    }
                 }
+            } else { // là khách thì xóa khách
+                oldGuest.forEach { map ->
+                    if (map["email"] == user?.email) { // xóa event khách
+                        map["eventId"]?.let { eventid ->
+                            repository.deleteEvent(eventid) { completed ->
+                                _uiState.update { homeUiState ->
+                                    homeUiState.copy(eventDeletedStatus = completed)
+                                }
+                            }
+                        }
+                    } else {
+//        xóa khách ra khỏi các event thì:
+//        1. Xóa khách từ các khách khác
+                        map["eventId"]?.let {
+                            repository.updateGuestOfHost(it, newGuest)
+                        }
+                    }
+                }
+                
+//                2. Xóa khách trong host
+                repository.updateGuestOfHost(hostEventId, newGuest)
             }
         }
     }

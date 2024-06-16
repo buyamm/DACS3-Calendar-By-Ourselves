@@ -407,6 +407,7 @@ class EventViewModel @Inject constructor(
             val listUser = event.guest.map { map ->
                 userRepository.getUser(map["email"])
             }
+            val host = event.host["email"]
 
             var nonNullUsers = listUser.filterNotNull()
             _uiState.update {
@@ -422,9 +423,12 @@ class EventViewModel @Inject constructor(
                     startTime = startTime!!,
                     endTime = endTime!!,
                     selectedUserList = nonNullUsers,
-                    isHost = user?.email == event.host["email"]
+                    isHost = user?.email == event.host["email"],
+                    hostEmail = host!!
                 )
             }
         }
     }
+
 }
+

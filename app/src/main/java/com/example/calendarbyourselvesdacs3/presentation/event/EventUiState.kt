@@ -21,6 +21,7 @@ data class EventUiState(
     val selectedUserList: List<User> = emptyList(),
     val searchQuery: String = "",
     val isHost: Boolean = false,
+    val hostEmail: String = "",
 
     val eventAddedStatus: Boolean = false,
     val eventUpdatedStatus: Boolean = false,
