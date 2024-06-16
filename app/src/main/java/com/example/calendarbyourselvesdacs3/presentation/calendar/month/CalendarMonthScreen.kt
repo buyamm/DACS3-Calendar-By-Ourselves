@@ -52,7 +52,9 @@ fun CalendarMonthScreen(
     userData: UserData?,
     onSignOut: () -> Unit,
     onSearchClick: () -> Unit,
-    homeViewModel: HomeViewModel = hiltViewModel()
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    darkTheme: Boolean,
+    onThemeUpdated: () -> Unit
 ) {
     val state by viewModel.collectAsState() // by thì không cần .value
     val uiState = homeViewModel.uiState.collectAsStateWithLifecycle().value
@@ -69,17 +71,6 @@ fun CalendarMonthScreen(
             homeViewModel.loadEventsByDate(date = it)
         }
     }
-
-//    LaunchedEffect(dataLoaded) {
-//        if (dataLoaded){
-//            println("$date: ${uiState.eventQuantity}")
-//            if(uiState.eventQuantity == 0){
-//                onNavigateCreateEvent(date!!)
-//            }
-//            homeViewModel.resetDataLoaded()
-//        }
-//    }
-
 
     viewModel.collectSideEffect {
         when (it) {
@@ -107,6 +98,8 @@ fun CalendarMonthScreen(
                 userData = userData,
                 onSignOut = onSignOut,
                 onSearchClick = onSearchClick,
+                darkTheme = darkTheme,
+                onThemeUpdated = onThemeUpdated
             )
         },
     ) {
@@ -163,13 +156,6 @@ fun CalendarMonthScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             itemsIndexed(uiState.eventList.data) { index, event ->
-//                                EventWithoutDescriptionComponent(
-//                                    event = event,
-//                                    onEventClick = {
-//                                        onNavigateToUpdateEvent(it)
-//                                    }
-//                                )
-//                                Spacer(modifier = Modifier.height(16.dp))
 
                                 EventComponentLikeApple(
                                     event = event,

@@ -74,8 +74,6 @@ fun ListEventScreen(
     }
     val scope = rememberCoroutineScope()
 
-
-
     LaunchedEffect(Unit) {
         viewModel.loadEventsByDate(date = date)
     }

@@ -18,6 +18,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,7 +53,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
 
-            CalendarByOurselvesDACS3Theme {
+            var darkTheme by rememberSaveable { mutableStateOf(false) }
+
+            CalendarByOurselvesDACS3Theme (darkTheme = darkTheme) {
 
                 val isSystemInDarkMode = isSystemInDarkTheme()
                 val systemController = rememberSystemUiController()
@@ -80,7 +85,13 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    NavGraph(signInViewModel = signInViewModel, eventViewModel = eventViewModel, context = applicationContext)
+                    NavGraph(
+                        signInViewModel = signInViewModel,
+                        eventViewModel = eventViewModel,
+                        context = applicationContext,
+                        darkTheme = darkTheme,
+                        onThemeUpdated = { darkTheme = !darkTheme }
+                    )
 
                 }
             }

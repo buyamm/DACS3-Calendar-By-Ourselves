@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.domain.model.event.PairColor
+import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -300,6 +301,8 @@ fun dataAndTimePickerComponent(
         }
     }
 
+    val appColors = LocalAppColors.current
+
 
     val formattedStartDate = DateTimeFormatter
         .ofPattern("E, MMM dd yyyy")
@@ -362,7 +365,7 @@ fun dataAndTimePickerComponent(
                         startDateDialogState.show()
                     },
                     fontSize = 17.sp,
-                    color = Color.Black
+                    color = appColors.calendarContent
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
@@ -373,7 +376,7 @@ fun dataAndTimePickerComponent(
                         Modifier.clickable { startTimeDialogState.show() }
                     },
                     fontSize = 17.sp,
-                    color = if (isCheckAllDay) Color.LightGray else Color.Black
+                    color = if (isCheckAllDay) Color.LightGray else appColors.calendarContent
                 )
             }
             Row {
@@ -384,7 +387,7 @@ fun dataAndTimePickerComponent(
 
                     },
                     fontSize = 17.sp,
-                    color = if (isEndDateInvalid) Color.Red else Color.Black
+                    color = if (isEndDateInvalid) Color.Red else appColors.calendarContent
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
@@ -395,7 +398,7 @@ fun dataAndTimePickerComponent(
                         Modifier.clickable { endTimeDialogState.show() }
                     },
                     fontSize = 17.sp,
-                    color = if (isEndDateInvalid || (isEndTimeInvalid && isEndDateInvalid)) Color.Red else if (isCheckAllDay) Color.LightGray else Color.Black
+                    color = if (isEndDateInvalid || (isEndTimeInvalid && isEndDateInvalid)) Color.Red else if (isCheckAllDay) Color.LightGray else appColors.calendarContent
                 )
             }
         }
@@ -507,13 +510,6 @@ fun notifcationComponent(uiState: EventUiState, viewModel: EventViewModel) {
 
 @Composable
 fun pickColorComponent(uiState: EventUiState, viewModel: EventViewModel) {
-//    var colorIndex by remember {
-//        mutableStateOf(Color.Blue)
-//    }
-//    var colorName by remember {
-//        mutableStateOf("Default color")
-//    }
-
 
     val selectedColor by animateColorAsState(
         targetValue = ColorUtil.colors[uiState.colorIndex].colorValue
@@ -523,17 +519,30 @@ fun pickColorComponent(uiState: EventUiState, viewModel: EventViewModel) {
 
     var showDialog by remember { mutableStateOf(false) }
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.padding(start = 15.dp, end = 15.dp)) {
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .background(selectedColor)
-            )
+        Box(
+            modifier = Modifier
+                .padding(
+                    start = 15.dp,
+                    end = 15.dp
+                )
+                .clickable { showDialog = true }
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .background(selectedColor)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = colorName,
+                    fontSize = 18.sp,
+                    modifier = Modifier)
+            }
         }
-        Text(
-            text = colorName,
-            fontSize = 18.sp,
-            modifier = Modifier.clickable { showDialog = true })
 
         if (showDialog) {
             ColorPickerDialog(

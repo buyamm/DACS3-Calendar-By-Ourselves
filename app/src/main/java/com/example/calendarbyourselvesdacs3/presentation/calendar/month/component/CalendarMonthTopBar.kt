@@ -1,6 +1,7 @@
 package com.example.calendarbyourselvesdacs3.presentation.calendar.month.component
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -24,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -37,6 +39,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.domain.model.user.UserData
+import com.example.calendarbyourselvesdacs3.presentation.home.component.ChangeTheme
+import com.example.calendarbyourselvesdacs3.ui.theme.CalendarByOurselvesDACS3Theme
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -49,7 +53,10 @@ fun CalendarMonthTopBar(
     onReturnToDateClicked: () -> Unit,
     userData: UserData?,
     onSignOut: () -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
+    darkTheme: Boolean,
+    onThemeUpdated: () -> Unit
+
 ) {
     var expanded by remember {
         mutableStateOf(false)
@@ -88,10 +95,10 @@ fun CalendarMonthTopBar(
             if (expanded) {
                 DropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
                 ) {
                     DropdownMenuItem(
-                        leadingIcon = {
+                        trailingIcon = {
                             Icon(
                                 imageVector = Icons.Default.ExitToApp,
                                 contentDescription = null
@@ -100,6 +107,19 @@ fun CalendarMonthTopBar(
                         text = { Text(text = "Log out") },
                         onClick = { onSignOut() }
                     )
+                    DropdownMenuItem(
+                        trailingIcon = {
+                            ChangeTheme(
+                                darkTheme = darkTheme,
+                                onThemeUpdated = onThemeUpdated
+                            )
+                        },
+                        text = { Text(text = "Dark mode") },
+                        onClick = {
+
+                        }
+                    )
+
                 }
             }
         },
@@ -138,8 +158,3 @@ private fun DateTitle(date: LocalDate) {
     }
 }
 
-@Composable
-@Preview(showBackground = true)
-fun showBg(){
-    DateTitle(date = LocalDate.now())
-}

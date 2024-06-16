@@ -37,7 +37,9 @@ import kotlinx.coroutines.launch
 fun NavGraph(
     signInViewModel: SignInViewModel,
     eventViewModel: EventViewModel,
-    context: Context
+    context: Context,
+    darkTheme: Boolean,
+    onThemeUpdated: () -> Unit
 ) {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
@@ -132,7 +134,9 @@ fun NavGraph(
                 },
                 onSearchClick = {
                     navController.navigate(route = Screen.SearchScreen.name)
-                }
+                },
+                darkTheme = darkTheme,
+                onThemeUpdated = onThemeUpdated
             )
         }
 
@@ -146,7 +150,7 @@ fun NavGraph(
             )
         }
 
-//        Create event
+//        =============Create event================
         composable(
 //            route = Screen.InteractWithTaskScreen.name,
             route = Screen.InteractWithTaskScreen.name + "/create?date={date}",
@@ -160,7 +164,7 @@ fun NavGraph(
             )
         }
 
-//        Update event
+//        ================Update event======================
         composable(
             route = Screen.InteractWithTaskScreen.name + "/update?eventId={eventId}",
 //            route = Screen.InteractWithTaskScreen.name,
@@ -177,7 +181,7 @@ fun NavGraph(
             )
         }
 
-//        Event List
+//        =================Event List====================
         composable(
             route = Screen.ListEventScreen.name + "/event-list?date={date}"
 //            route = Screen.ListEventScreen.name

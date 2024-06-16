@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.example.calendarbyourselvesdacs3.R
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.formatTimeToString
+import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 
 
@@ -44,6 +45,8 @@ fun EventComponent(event: Event, onEventClick: (eventId: String) -> Unit) {
 
     var hourAndMinute = ""
     var hourFormat = ""
+
+    val appColors = LocalAppColors.current
 
 
     splitTimeForLeftLine(startTimeString).forEachIndexed { index, s ->
@@ -73,10 +76,10 @@ fun EventComponent(event: Event, onEventClick: (eventId: String) -> Unit) {
                     modifier = Modifier
                         .size(16.dp)
                         .clip(CircleShape)
-                        .border(border = BorderStroke(3.dp, Color.Black), shape = CircleShape)
+                        .border(border = BorderStroke(3.dp, appColors.dividerColor), shape = CircleShape)
                 )
 
-                Divider(modifier = Modifier.width(6.dp), color = Color.Black)
+                Divider(modifier = Modifier.width(6.dp), color = appColors.dividerColor)
 
                 Row(
                     modifier = Modifier

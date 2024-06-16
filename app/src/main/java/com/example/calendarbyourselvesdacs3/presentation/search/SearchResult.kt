@@ -34,12 +34,15 @@ import com.example.calendarbyourselvesdacs3.domain.model.event.Event
 import com.example.calendarbyourselvesdacs3.domain.model.event.formatDateToString
 import com.example.calendarbyourselvesdacs3.domain.model.event.formatTimeToString
 import com.example.calendarbyourselvesdacs3.domain.model.event.splitFormattedDate
+import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
 import com.example.calendarbyourselvesdacs3.utils.ColorUtil
 
 
 @Composable
 fun SearchResult(event: Event, onEventClick: (eventId: String) -> Unit) {
     val taskColor = ColorUtil.colors[event.colorIndex].colorValue
+    val appColors = LocalAppColors.current
+
 
     val dateString = formatDateToString(event.startDay)
     var month = ""
@@ -91,10 +94,10 @@ fun SearchResult(event: Event, onEventClick: (eventId: String) -> Unit) {
                     modifier = Modifier
                         .size(16.dp)
                         .clip(CircleShape)
-                        .border(border = BorderStroke(3.dp, Color.Black), shape = CircleShape)
+                        .border(border = BorderStroke(3.dp, appColors.dividerColor), shape = CircleShape)
                 )
 
-                Divider(modifier = Modifier.width(6.dp), color = Color.Black)
+                Divider(modifier = Modifier.width(6.dp), color = appColors.dividerColor)
 
                 Row(
                     modifier = Modifier

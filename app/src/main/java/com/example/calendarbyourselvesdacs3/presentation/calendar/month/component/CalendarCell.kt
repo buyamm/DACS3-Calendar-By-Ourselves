@@ -38,6 +38,7 @@ import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMon
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
 import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
+import java.util.Date
 
 
 @Composable
@@ -52,6 +53,12 @@ fun CalendarCell(
 ) {
     val appColors = LocalAppColors.current
     var stateColor by remember { mutableStateOf(false) }
+    var listDate: MutableList<CalendarDate> = remember {mutableListOf()}
+
+
+//    if (isClicked) {
+//        Log.d("---------->", selectedDate.toString())
+//    }
 
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -77,8 +84,11 @@ fun CalendarCell(
                             alpha = 0.5f
                         }
                 }
+
             }
-            .clickable { onCellClicked(date) }
+            .clickable {
+                onCellClicked(date)
+            }
     ) {
 
         Column(
@@ -89,19 +99,25 @@ fun CalendarCell(
                 .height(36.dp)
         ) {
             Text(
-                modifier =
-                if (isToday) {
+                modifier = Modifier.let {
 
-                    Modifier
-                        .background(shape = CircleShape, color = appColors.textColorIsCurrentDay)
-                        .size(22.dp)
+                    if (isToday) {
 
-                            }
-                else {
+                        it
+                            .background(
+                                shape = CircleShape,
+                                color = appColors.textColorIsCurrentDay
+                            )
+                            .size(22.dp)
 
-                    Modifier
+                    }
+                    else {
 
-                     },
+                        it
+
+                    }
+
+                },
                 text = "${date.date.dayOfMonth}",
                 color = if (isToday) appColors.calendarContentIsToday else appColors.calendarContent,
                 fontSize = 16.sp,

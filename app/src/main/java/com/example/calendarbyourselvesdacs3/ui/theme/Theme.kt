@@ -99,8 +99,6 @@ fun CalendarByOurselvesDACS3Theme(
         else -> LightColorScheme to AppColors.Light
     }
 
-
-
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
