@@ -29,34 +29,6 @@ class CalendarMonthViewModel @Inject constructor(
         },
     )
 
-//    fun scrollMonth(page: Long) {
-//        intent {
-//            val currentPage = state.currentPage
-//            val pageDifference = page - currentPage
-//
-//            if (pageDifference != 0L) {
-//                val date = state.currentDate
-//                updateMonth2(date.plusMonths(pageDifference))
-//                reduce {
-//                    state.copy(currentPage = page)
-//                }
-//            }
-//        }
-//    }
-//
-//
-//    context(SimpleSyntax<State, SideEffect>)
-//    private suspend fun updateMonth2(date: LocalDate) {
-//        val newMonthDays = getMonthDays(date)
-//        reduce {
-//            state.copy(
-//                monthDays = newMonthDays,
-//                calendarDate = date,
-//            )
-//        }
-//    }
-
-
     fun onNextMonth() {
         intent {
             val date = state.calendarDate

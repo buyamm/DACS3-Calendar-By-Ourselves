@@ -33,16 +33,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.CalendarDate
 import com.example.calendarbyourselvesdacs3.domain.model.calendar.entity.isInMonth
 import com.example.calendarbyourselvesdacs3.presentation.calendar.month.component.modifier.calendarCellPadding
 import com.example.calendarbyourselvesdacs3.presentation.home.HomeViewModel
 import com.example.calendarbyourselvesdacs3.ui.theme.LocalAppColors
+import com.google.android.play.integrity.internal.i
+import kotlinx.coroutines.delay
+import java.time.LocalDate
 import java.util.Date
 
 
 @Composable
 fun CalendarCell(
+    dateClicked: Boolean,
+    onDateClick: () -> Unit,
     index: Int,
     cellSize: Dp,
     isToday: Boolean,
@@ -53,12 +59,7 @@ fun CalendarCell(
 ) {
     val appColors = LocalAppColors.current
     var stateColor by remember { mutableStateOf(false) }
-    var listDate: MutableList<CalendarDate> = remember {mutableListOf()}
-
-
-//    if (isClicked) {
-//        Log.d("---------->", selectedDate.toString())
-//    }
+    val uiState = homeViewModel.uiState.collectAsStateWithLifecycle().value
 
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -66,28 +67,39 @@ fun CalendarCell(
             .size(cellSize)
             .calendarCellPadding(index)
             .clip(RoundedCornerShape(2.dp))
-            .let {
-                if (!date.isInMonth && isToday) {
-                    it
-                        .background(appColors.outOfMonthBackground)
-                        .graphicsLayer {
-                            alpha = 0.5f
+            .let { bg ->
+
+                    if (dateClicked) {
+                        bg.background(Color.LightGray)
+                    } else {
+                        if (!date.isInMonth && isToday) {
+                            bg
+                                .background(appColors.outOfMonthBackground)
+                                .graphicsLayer {
+                                    alpha = 0.5f
+                                }
+                        } else if (isToday) {
+
+                            bg.background(appColors.inMonthBackground)
+
+                        } else if (date.isInMonth) {
+
+                            bg.background(appColors.inMonthBackground)
+
+                        } else {
+                            bg
+                                .background(appColors.outOfMonthBackground)
+                                .graphicsLayer {
+                                    alpha = 0.5f
+                                }
                         }
-                } else if (isToday) {
-                    it.background(appColors.inMonthBackground)
-                } else if (date.isInMonth) {
-                    it.background(appColors.inMonthBackground)
-                } else {
-                    it
-                        .background(appColors.outOfMonthBackground)
-                        .graphicsLayer {
-                            alpha = 0.5f
-                        }
-                }
+                    }
+
 
             }
             .clickable {
                 onCellClicked(date)
+                onDateClick()
             }
     ) {
 
@@ -136,6 +148,8 @@ fun CalendarCell(
         }
 
         LaunchedEffect(Unit, date.date) {
+
+            homeViewModel.onChangeDate(date = date.date)
 
             var check = homeViewModel.getDateHaveEventVM().find { date.date.toString() == it}
             if(check == date.date.toString()) {
