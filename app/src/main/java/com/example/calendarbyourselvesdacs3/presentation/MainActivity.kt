@@ -127,7 +127,7 @@ class MainActivity : ComponentActivity() {
             context,
             requestCode,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.set(
             AlarmManager.RTC_WAKEUP,

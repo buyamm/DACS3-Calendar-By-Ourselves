@@ -1,6 +1,5 @@
 package com.example.calendarbyourselvesdacs3.common.date
 
-import com.example.calendarbyourselvesdacs3.common.room.converter.LocalDateConverter
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -16,14 +15,16 @@ fun getDatesBetween(startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
     return dates
 }
 
+// Trả về một list các startDay cần thông báo
+// kiểu List<String>
 fun listDatesWithStartTime(startDateTimeStr: String, endDateTimeStr: String): List<String> {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-    // Chuyển đổi chuỗi thời gian thành LocalDateTime
+
     val startDateTime = LocalDateTime.parse(startDateTimeStr, formatter)
     val endDateTime = LocalDateTime.parse(endDateTimeStr, formatter)
 
-    // Lấy thời gian của ngày bắt đầu
+
     val startTime = startDateTime.toLocalTime()
 
     val dates = mutableListOf<String>()
@@ -36,7 +37,7 @@ fun listDatesWithStartTime(startDateTimeStr: String, endDateTimeStr: String): Li
         if (!dateTimeWithStartTime.isAfter(endDateTime)) {
             dates.add(dateTimeWithStartTime.format(formatter))
         }
-        // Tăng currentDate lên một ngày
+
         currentDate = currentDate.plus(1, ChronoUnit.DAYS)
     }
 

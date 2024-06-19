@@ -184,7 +184,7 @@ fun ListEventScreen(
                                                                     scope = scope,
                                                                     snackBarHostState = snackbarHostState,
                                                                     msg = "Deleted successfully!",
-                                                                    actionLabel = "UNDO",
+                                                                    actionLabel = "",
                                                                     onAction = {
 //                                                                        viewModel.undoDeletedEvent()
                                                                     }
