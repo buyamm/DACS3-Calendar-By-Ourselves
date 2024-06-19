@@ -6,9 +6,11 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.example.calendarbyourselvesdacs3.R
 
 class MyAlarm: BroadcastReceiver() {
 
@@ -33,7 +35,10 @@ private fun showNotification(context: Context, title: String, desc: String) {
     val channelName = "message name"
 
     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+        val soundUri: Uri = Uri.parse("android.resource://${context.packageName}/${R.raw.sound_effect}")
+        val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH).apply {
+            setSound(soundUri, null)
+        }
         manager.createNotificationChannel(channel)
     }
 

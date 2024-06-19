@@ -103,8 +103,6 @@ fun NavGraph(
             )
         }
 
-
-
 //        calendar - home page
         composable("calendar") {
             CalendarMonthScreen(

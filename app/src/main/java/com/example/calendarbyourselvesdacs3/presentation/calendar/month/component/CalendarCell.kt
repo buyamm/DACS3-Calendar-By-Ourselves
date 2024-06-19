@@ -152,7 +152,6 @@ fun CalendarCell(
 
         LaunchedEffect(Unit, date.date) {
 
-
             homeViewModel.onChangeDate(date = date.date)
 
             var check = homeViewModel.getDateHaveEventVM(userData).find { date.date.toString() == it}

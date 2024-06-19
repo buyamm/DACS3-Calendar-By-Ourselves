@@ -198,7 +198,7 @@ class HomeViewModel @Inject constructor(
                         Quintuple(
                             time = diffTime(it),
                             title = i.title,
-                            desc = it,
+                            desc = i.description,
                             requestCode = it,
                             checkNotification = i.checkNotification
                         )

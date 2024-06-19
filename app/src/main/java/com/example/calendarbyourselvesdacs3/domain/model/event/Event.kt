@@ -33,7 +33,8 @@ data class DottedEvent(
     val endDate: String? = "",
     var startDay: Timestamp = Timestamp.now(),
     var endDay: Timestamp = Timestamp.now(),
-    val checkNotification: Boolean = false
+    val checkNotification: Boolean = false,
+    val description: String = ""
 )
 
 data class Quintuple<A, B, C, D, E>(

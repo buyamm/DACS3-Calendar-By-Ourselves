@@ -106,20 +106,12 @@ fun InteractWithTaskScreen(
     var isCanSave by remember {
         mutableStateOf(false)
     }
-    var isInitialComposition by remember { mutableStateOf(true) }
-    var isHost by remember {
-        mutableStateOf(false) // moi vo false
-    }
-
 
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember {
         SnackbarHostState()
     }
-
-
 
     LaunchedEffect(Unit) {
         if (isEventIdNotBlank) {
@@ -128,26 +120,6 @@ fun InteractWithTaskScreen(
             viewModel.resetState()
         }
     }
-
-//    LaunchedEffect(isInitialComposition) {
-//        if (isInitialComposition) {
-//            isInitialComposition = false
-//        } else {
-//            if (uiState.hostEmail !== emailHost) {
-//                mySnackBar(
-//                    scope = scope,
-//                    snackBarHostState = snackbarHostState,
-//                    msg = "Only the host can change this event",
-//                    actionLabel = "",
-//                    onAction = {
-//                    }
-//                )
-//            }
-//        }
-//
-//    }
-
-
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -914,7 +886,7 @@ fun EmailBoxes(
             }
         } else {
             Text(
-                text = if (uiState.hostEmail != "") uiState.hostEmail else "ban",
+                text = if (uiState.hostEmail != "") uiState.hostEmail else "You",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .background(Color.Gray, shape = RoundedCornerShape(8.dp))

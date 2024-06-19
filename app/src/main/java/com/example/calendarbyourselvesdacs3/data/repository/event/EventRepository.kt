@@ -325,7 +325,8 @@ class EventRepository @Inject constructor(
                     startDay = it.getTimestamp("startDay")!!,
                     endDay = it.getTimestamp("endDay")!!,
                     title = it.getString("title")!!,
-                    checkNotification = it.get("checkNotification") as Boolean
+                    checkNotification = it.get("checkNotification") as Boolean,
+                    description = it.get("description") as String
                 )
             }
             return data

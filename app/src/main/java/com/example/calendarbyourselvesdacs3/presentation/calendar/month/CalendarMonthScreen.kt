@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Divider
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,10 +63,9 @@ fun CalendarMonthScreen(
     val state by viewModel.collectAsState() // by thì không cần .value
     val uiState = homeViewModel.uiState.collectAsStateWithLifecycle().value
 
-    var date by remember {
+    var date by rememberSaveable {
         mutableStateOf<LocalDate?>(null)
     }
-
 
     LaunchedEffect(Unit, date) {
         date?.let {
@@ -85,7 +89,6 @@ fun CalendarMonthScreen(
         }
     }
 
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -102,6 +105,11 @@ fun CalendarMonthScreen(
                 onThemeUpdated = onThemeUpdated
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { date?.let { onNavigateCreateEvent(it) } }) {
+                Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
+            }
+        }
     ) {
         Column(
             modifier = Modifier
@@ -167,18 +175,23 @@ fun CalendarMonthScreen(
                                     }
                                 )
                                 if (index < uiState.eventList.data.size - 1){
-                                    Spacer(modifier = Modifier.fillMaxWidth(1f).height(12.dp))
+                                    Spacer(modifier = Modifier
+                                        .fillMaxWidth(1f)
+                                        .height(12.dp))
                                     Divider(modifier = Modifier
                                         .fillMaxWidth(1f)
                                         .height(1.dp)
                                     )
-                                    Spacer(modifier = Modifier.fillMaxWidth(1f).height(12.dp))
+                                    Spacer(modifier = Modifier
+                                        .fillMaxWidth(1f)
+                                        .height(12.dp))
                                 }
                             }
                         }
                     } else {
 
                         if (date == null) {
+
                             uiState.clickedDate?.let { date ->
                                 NoEventScreen() {
                                     onNavigateCreateEvent(date)

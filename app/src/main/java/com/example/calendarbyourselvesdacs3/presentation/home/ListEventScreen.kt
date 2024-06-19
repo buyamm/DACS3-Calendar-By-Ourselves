@@ -72,6 +72,7 @@ fun ListEventScreen(
     var openDialog by remember {
         mutableStateOf(false)
     }
+
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
@@ -184,7 +185,7 @@ fun ListEventScreen(
                                                                     scope = scope,
                                                                     snackBarHostState = snackbarHostState,
                                                                     msg = "Deleted successfully!",
-                                                                    actionLabel = "UNDO",
+                                                                    actionLabel = "",
                                                                     onAction = {
 //                                                                        viewModel.undoDeletedEvent()
                                                                     }

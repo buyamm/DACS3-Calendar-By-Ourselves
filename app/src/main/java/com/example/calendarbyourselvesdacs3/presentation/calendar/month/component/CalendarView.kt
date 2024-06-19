@@ -35,13 +35,14 @@ fun CalendarView(
     var calendarLayout by remember { mutableStateOf<CalendarLayout?>(null) }
     val appColors = LocalAppColors.current
 
-    var selectedDateIndex by rememberSaveable { mutableStateOf<Int?>(null) }
+    var selectedDateIndex by rememberSaveable { mutableStateOf<String?>(null) }
 
 
 
-    //hien thu ngay trong tuan
+
     LazyColumn {
         item {
+            //hien thu ngay trong tuan
             calendarLayout?.run {
                 WeekDays(
                     modifier = Modifier
@@ -63,8 +64,8 @@ fun CalendarView(
                 calendarLayout?.run {
                     monthDays.forEachIndexed { i, calendarDate ->
                         CalendarCell(
-                            dateClicked = selectedDateIndex == i,
-                            onDateClick = { selectedDateIndex = i },
+                            dateClicked = selectedDateIndex == calendarDate.date.toString(),
+                            onDateClick = { selectedDateIndex = calendarDate.date.toString() },
                             index = i,
                             cellSize = cellSize,
                             date = calendarDate,
