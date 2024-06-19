@@ -1,6 +1,5 @@
 package com.example.calendarbyourselvesdacs3.data.repository.event
 
-import android.util.Log
 import com.example.calendarbyourselvesdacs3.data.Resource
 import com.example.calendarbyourselvesdacs3.domain.model.event.DottedEvent
 import com.example.calendarbyourselvesdacs3.domain.model.event.Event
@@ -12,7 +11,6 @@ import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.firestore
-import com.google.firebase.firestore.getField
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -287,7 +285,10 @@ class EventRepository @Inject constructor(
                             val events = snapshot.documents
                                 .filter { document ->
                                     val title = document.getString("title")?.toLowerCase()
+                                    val date = document.getString("startDay")?.toLowerCase()
+
                                     title?.contains(queryValue.toLowerCase()) ?: false
+                                    date?.contains(queryValue.toLowerCase()) ?: false
                                 }
                                 .mapNotNull { document ->
                                     document.toObject(Event::class.java)
